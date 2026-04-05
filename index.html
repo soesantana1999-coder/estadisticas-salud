@@ -235,7 +235,27 @@ tr:nth-child(even){background:#f8f9fa}
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Periodo (meses)</label>
+        <label>Poblacion 1-4 anos</label>
+        <input type="number" id="pob_1_4" placeholder="Ej: 27" onchange="guardarPoblacion()">
+      </div>
+      <div class="form-group">
+        <label>Poblacion 5-14 anos</label>
+        <input type="number" id="pob_5_14" placeholder="Ej: 80" onchange="guardarPoblacion()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Poblacion 60+ anos</label>
+        <input type="number" id="pob_60" placeholder="Ej: 120" onchange="guardarPoblacion()">
+      </div>
+      <div class="form-group">
+        <label>Poblacion 15-59 anos</label>
+        <input type="number" id="pob_15_59" placeholder="Ej: 415" onchange="guardarPoblacion()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Periodo</label>
         <select id="ind_periodo" onchange="calcularIndicadores()">
           <option value="1">Mensual</option>
           <option value="3">Trimestral</option>
@@ -284,11 +304,21 @@ tr:nth-child(even){background:#f8f9fa}
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Def. neonatales (&lt;28d)</label>
-        <input type="number" id="hv_def_neo" placeholder="0" onchange="calcularIndicadores()">
+        <label>Def. neonatales precoces (0-6d)</label>
+        <input type="number" id="hv_def_neo_pre" placeholder="0" onchange="calcularIndicadores()">
       </div>
       <div class="form-group">
-        <label>Def. fetales tardias</label>
+        <label>Def. neonatales tardias (7-27d)</label>
+        <input type="number" id="hv_def_neo_tar" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Def. postneonatales (28-364d)</label>
+        <input type="number" id="hv_def_postneo" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Def. fetales tardias (28+sem)</label>
         <input type="number" id="hv_def_fetal" placeholder="0" onchange="calcularIndicadores()">
       </div>
     </div>
@@ -302,10 +332,176 @@ tr:nth-child(even){background:#f8f9fa}
         <input type="number" id="hv_emb_1t" placeholder="0" onchange="calcularIndicadores()">
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Partos por cesarea</label>
+        <input type="number" id="hv_cesareas" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Total de partos</label>
+        <input type="number" id="hv_partos" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Abortos (total)</label>
+        <input type="number" id="hv_abortos" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>NV de madres &lt;20 anos</label>
+        <input type="number" id="hv_nv_adol" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>EDO - Enfermedades de Declaracion Obligatoria</h3>
+    <p style="font-size:11px;color:var(--txt2);margin-bottom:10px">Casos notificados en el periodo (Modelo 84-01)</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>EDA (diarreicas agudas)</label>
+        <input type="number" id="edo_eda" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>IRA (respiratorias agudas)</label>
+        <input type="number" id="edo_ira" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tuberculosis</label>
+        <input type="number" id="edo_tb" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Hepatitis viral</label>
+        <input type="number" id="edo_hepatitis" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sifilis</label>
+        <input type="number" id="edo_sifilis" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Blenorragia</label>
+        <input type="number" id="edo_blenorragia" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Varicela</label>
+        <input type="number" id="edo_varicela" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Leptospirosis</label>
+        <input type="number" id="edo_leptospirosis" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Dengue</label>
+        <input type="number" id="edo_dengue" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Intox. alimentarias</label>
+        <input type="number" id="edo_intox" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Conjuntivitis</label>
+        <input type="number" id="edo_conjuntivitis" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Escabiosis</label>
+        <input type="number" id="edo_escabiosis" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Dispensarizacion</h3>
+    <p style="font-size:11px;color:var(--txt2);margin-bottom:10px">Clasificacion de la poblacion del consultorio</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Grupo I (Sano)</label>
+        <input type="number" id="disp_g1" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Grupo II (Riesgo)</label>
+        <input type="number" id="disp_g2" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Grupo III (Enfermo)</label>
+        <input type="number" id="disp_g3" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Grupo IV (Discapacidad)</label>
+        <input type="number" id="disp_g4" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Inmunizacion</h3>
+    <p style="font-size:11px;color:var(--txt2);margin-bottom:10px">Cobertura de vacunacion</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ninos que completaron BCG</label>
+        <input type="number" id="vac_bcg" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Poblacion diana BCG</label>
+        <input type="number" id="vac_bcg_diana" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Pentavalente completa</label>
+        <input type="number" id="vac_penta" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Poblacion diana Penta</label>
+        <input type="number" id="vac_penta_diana" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>PRS completa</label>
+        <input type="number" id="vac_prs" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Poblacion diana PRS</label>
+        <input type="number" id="vac_prs_diana" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Antipolio completa</label>
+        <input type="number" id="vac_polio" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+      <div class="form-group">
+        <label>Poblacion diana Polio</label>
+        <input type="number" id="vac_polio_diana" placeholder="0" onchange="calcularIndicadores()">
+      </div>
+    </div>
   </div>
 
   <div class="card">
     <h3>Indicadores Calculados</h3>
+    <p style="font-size:11px;color:var(--txt2);margin-bottom:8px">Filtrar por categoria:</p>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
+      <span class="chip active" onclick="filtrarIndicadores('todos')">Todos</span>
+      <span class="chip" onclick="filtrarIndicadores('mortalidad')">Mortalidad</span>
+      <span class="chip" onclick="filtrarIndicadores('natalidad')">Natalidad</span>
+      <span class="chip" onclick="filtrarIndicadores('morbilidad')">Morbilidad</span>
+      <span class="chip" onclick="filtrarIndicadores('materno')">Materno-Infantil</span>
+      <span class="chip" onclick="filtrarIndicadores('dispensarizacion')">Dispensarizacion</span>
+      <span class="chip" onclick="filtrarIndicadores('inmunizacion')">Inmunizacion</span>
+      <span class="chip" onclick="filtrarIndicadores('demografico')">Demograficos</span>
+    </div>
     <div id="resultados-indicadores"></div>
     <button class="btn btn-ok" onclick="calcularIndicadores()" style="margin-top:12px">Recalcular</button>
   </div>
@@ -388,7 +584,9 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  document.querySelectorAll('.tab')[['consulta','registros','indicadores','datos'].indexOf(name)].classList.add('active');
+  const pages = ['consulta','registros','indicadores','edo','datos'];
+  const idx = pages.indexOf(name);
+  if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   if (name === 'registros') renderRegistros();
   if (name === 'indicadores') { cargarPoblacion(); calcularIndicadores(); }
   if (name === 'datos') actualizarEstadisticas();
@@ -501,142 +699,158 @@ function eliminarConsulta(id) {
 }
 
 // === POBLACION ===
+const POB_FIELDS = ['pob_total','pob_mujeres_fertil','pob_menores1','pob_menores5','pob_1_4','pob_5_14','pob_60','pob_15_59'];
 function guardarPoblacion() {
-  const data = {
-    total: parseInt(document.getElementById('pob_total').value) || 0,
-    mujeres_fertil: parseInt(document.getElementById('pob_mujeres_fertil').value) || 0,
-    menores1: parseInt(document.getElementById('pob_menores1').value) || 0,
-    menores5: parseInt(document.getElementById('pob_menores5').value) || 0
-  };
+  const data = {};
+  POB_FIELDS.forEach(f => data[f] = parseInt(document.getElementById(f).value) || 0);
   savePoblacion(data);
 }
-
 function cargarPoblacion() {
   const p = getPoblacion();
-  if (p.total) document.getElementById('pob_total').value = p.total;
-  if (p.mujeres_fertil) document.getElementById('pob_mujeres_fertil').value = p.mujeres_fertil;
-  if (p.menores1) document.getElementById('pob_menores1').value = p.menores1;
-  if (p.menores5) document.getElementById('pob_menores5').value = p.menores5;
+  POB_FIELDS.forEach(f => { if (p[f]) document.getElementById(f).value = p[f]; });
 }
+
+let indicadorFiltro = 'todos';
+function filtrarIndicadores(cat) {
+  indicadorFiltro = cat;
+  document.querySelectorAll('#page-indicadores .chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  calcularIndicadores();
+}
+
+function gv(id) { return parseInt(document.getElementById(id).value) || 0; }
 
 // === INDICADORES ===
 function calcularIndicadores() {
-  const pob = parseInt(document.getElementById('pob_total').value) || 0;
-  const mf = parseInt(document.getElementById('pob_mujeres_fertil').value) || 0;
-  const nv = parseInt(document.getElementById('hv_nv').value) || 0;
-  const bp = parseInt(document.getElementById('hv_bp').value) || 0;
-  const def = parseInt(document.getElementById('hv_def').value) || 0;
-  const def_inf = parseInt(document.getElementById('hv_def_inf').value) || 0;
-  const def_5 = parseInt(document.getElementById('hv_def_5').value) || 0;
-  const def_mat = parseInt(document.getElementById('hv_def_mat').value) || 0;
-  const def_neo = parseInt(document.getElementById('hv_def_neo').value) || 0;
-  const def_fetal = parseInt(document.getElementById('hv_def_fetal').value) || 0;
-  const emb_capt = parseInt(document.getElementById('hv_emb_capt').value) || 0;
-  const emb_1t = parseInt(document.getElementById('hv_emb_1t').value) || 0;
-
-  // Consultas del periodo
+  const pob = gv('pob_total'), mf = gv('pob_mujeres_fertil');
+  const m1 = gv('pob_menores1'), m5 = gv('pob_menores5');
+  const p14 = gv('pob_1_4'), p514 = gv('pob_5_14');
+  const p60 = gv('pob_60'), p1559 = gv('pob_15_59');
+  const nv = gv('hv_nv'), bp = gv('hv_bp');
+  const def = gv('hv_def'), def_inf = gv('hv_def_inf');
+  const def_5 = gv('hv_def_5'), def_mat = gv('hv_def_mat');
+  const def_neo_pre = gv('hv_def_neo_pre'), def_neo_tar = gv('hv_def_neo_tar');
+  const def_postneo = gv('hv_def_postneo'), def_fetal = gv('hv_def_fetal');
+  const def_neo = def_neo_pre + def_neo_tar;
+  const emb_capt = gv('hv_emb_capt'), emb_1t = gv('hv_emb_1t');
+  const cesareas = gv('hv_cesareas'), partos = gv('hv_partos');
+  const abortos = gv('hv_abortos'), nv_adol = gv('hv_nv_adol');
+  // EDO
+  const eda = gv('edo_eda'), ira = gv('edo_ira'), tb = gv('edo_tb');
+  const hepatitis = gv('edo_hepatitis'), sifilis = gv('edo_sifilis');
+  const blenorragia = gv('edo_blenorragia'), varicela = gv('edo_varicela');
+  const leptospirosis = gv('edo_leptospirosis'), dengue = gv('edo_dengue');
+  const intox = gv('edo_intox'), conjuntivitis = gv('edo_conjuntivitis');
+  const escabiosis = gv('edo_escabiosis');
+  // Dispensarizacion
+  const g1 = gv('disp_g1'), g2 = gv('disp_g2'), g3 = gv('disp_g3'), g4 = gv('disp_g4');
+  const dispTotal = g1+g2+g3+g4;
+  // Inmunizacion
+  const vbcg = gv('vac_bcg'), vbcgd = gv('vac_bcg_diana');
+  const vpenta = gv('vac_penta'), vpentad = gv('vac_penta_diana');
+  const vprs = gv('vac_prs'), vprsd = gv('vac_prs_diana');
+  const vpolio = gv('vac_polio'), vpoliod = gv('vac_polio_diana');
+  // Consultas
   const consultas = getConsultas();
   const totalConsultas = consultas.length;
   const casosNuevos = consultas.filter(c => c.incidencia).length;
+  const consultorio = consultas.filter(c => c.lugar==='consultorio').length;
+  const terreno = consultas.filter(c => c.lugar==='terreno').length;
+  const enf = consultas.filter(c => c.enfermeria).length;
 
-  const indicadores = [];
-
-  if (pob > 0) {
-    indicadores.push({
-      nombre: 'Tasa de Mortalidad General',
-      valor: ((def / pob) * 1000).toFixed(2),
-      unidad: 'x 1,000 hab.',
-      formula: `${def} defunciones / ${pob} poblacion x 1,000`
-    });
-    indicadores.push({
-      nombre: 'Tasa de Natalidad',
-      valor: ((nv / pob) * 1000).toFixed(2),
-      unidad: 'x 1,000 hab.',
-      formula: `${nv} nacidos vivos / ${pob} poblacion x 1,000`
-    });
-    indicadores.push({
-      nombre: 'Consultas por Habitante',
-      valor: (totalConsultas / pob).toFixed(2),
-      unidad: 'consultas/hab.',
-      formula: `${totalConsultas} consultas / ${pob} poblacion`
-    });
+  const ind = [];
+  function add(cat, nombre, valor, unidad, formula) {
+    if (indicadorFiltro !== 'todos' && indicadorFiltro !== cat) return;
+    if (isNaN(valor) || !isFinite(valor)) return;
+    ind.push({cat, nombre, valor: typeof valor==='number'?valor.toFixed(2):valor, unidad, formula});
   }
 
-  if (nv > 0) {
-    indicadores.push({
-      nombre: 'Tasa de Mortalidad Infantil',
-      valor: ((def_inf / nv) * 1000).toFixed(2),
-      unidad: 'x 1,000 NV',
-      formula: `${def_inf} def. <1a / ${nv} nacidos vivos x 1,000`
-    });
-    indicadores.push({
-      nombre: 'Tasa de Mortalidad Neonatal',
-      valor: ((def_neo / nv) * 1000).toFixed(2),
-      unidad: 'x 1,000 NV',
-      formula: `${def_neo} def. <28d / ${nv} nacidos vivos x 1,000`
-    });
-    indicadores.push({
-      nombre: 'Tasa de Mortalidad Materna',
-      valor: ((def_mat / nv) * 100000).toFixed(2),
-      unidad: 'x 100,000 NV',
-      formula: `${def_mat} def. maternas / ${nv} nacidos vivos x 100,000`
-    });
-    indicadores.push({
-      nombre: 'Indice de Bajo Peso al Nacer',
-      valor: ((bp / nv) * 100).toFixed(2),
-      unidad: '%',
-      formula: `${bp} <2500g / ${nv} nacidos vivos x 100`
-    });
-    indicadores.push({
-      nombre: 'Tasa de Mortalidad Perinatal',
-      valor: (((def_fetal + def_neo) / (nv + def_fetal)) * 1000).toFixed(2),
-      unidad: 'x 1,000 (NV + def. fetales)',
-      formula: `(${def_fetal} fetales + ${def_neo} neonatales) / (${nv} NV + ${def_fetal} fetales) x 1,000`
-    });
-    indicadores.push({
-      nombre: 'Razon de Mortalidad de Menores de 5',
-      valor: ((def_5 / nv) * 1000).toFixed(2),
-      unidad: 'x 1,000 NV',
-      formula: `${def_5} def. <5a / ${nv} nacidos vivos x 1,000`
-    });
+  // --- MORTALIDAD ---
+  if (pob>0 && def>=0) add('mortalidad','Tasa de Mortalidad General',(def/pob)*1000,'x 1,000 hab.',`${def} def. / ${pob} pob. x 1,000`);
+  if (nv>0) {
+    add('mortalidad','Tasa de Mortalidad Infantil',(def_inf/nv)*1000,'x 1,000 NV',`${def_inf} def.<1a / ${nv} NV x 1,000`);
+    add('mortalidad','Mort. Neonatal Precoz (0-6d)',(def_neo_pre/nv)*1000,'x 1,000 NV',`${def_neo_pre} def.0-6d / ${nv} NV x 1,000`);
+    add('mortalidad','Mort. Neonatal Tardia (7-27d)',(def_neo_tar/nv)*1000,'x 1,000 NV',`${def_neo_tar} def.7-27d / ${nv} NV x 1,000`);
+    add('mortalidad','Mort. Neonatal Total (<28d)',(def_neo/nv)*1000,'x 1,000 NV',`${def_neo} def.<28d / ${nv} NV x 1,000`);
+    add('mortalidad','Mort. Postneonatal (28-364d)',(def_postneo/nv)*1000,'x 1,000 NV',`${def_postneo} def.28-364d / ${nv} NV x 1,000`);
+    add('mortalidad','Mort. Menores de 5 anos',(def_5/nv)*1000,'x 1,000 NV',`${def_5} def.<5a / ${nv} NV x 1,000`);
+    add('mortalidad','Razon de Mort. Materna',(def_mat/nv)*100000,'x 100,000 NV',`${def_mat} def.mat. / ${nv} NV x 100,000`);
+    if (def_fetal>=0) add('mortalidad','Mort. Perinatal',((def_fetal+def_neo_pre)/(nv+def_fetal))*1000,'x 1,000',`(${def_fetal}+${def_neo_pre}) / (${nv}+${def_fetal}) x 1,000`);
+    if (def_fetal>0) add('mortalidad','Mort. Fetal Tardia (Mortinatalidad)',(def_fetal/(nv+def_fetal))*1000,'x 1,000',`${def_fetal} / (${nv}+${def_fetal}) x 1,000`);
+  }
+  if (p14>0) add('mortalidad','Mort. Preescolar (1-4a)',((gv('hv_def_5')-def_inf)/p14)*10000,'x 10,000',`def.1-4a / ${p14} pob.1-4a x 10,000`);
+
+  // --- NATALIDAD ---
+  if (pob>0 && nv>0) add('natalidad','Tasa de Natalidad',(nv/pob)*1000,'x 1,000 hab.',`${nv} NV / ${pob} pob. x 1,000`);
+  if (mf>0 && nv>0) add('natalidad','Tasa de Fecundidad General',(nv/mf)*1000,'x 1,000 muj.15-49',`${nv} NV / ${mf} muj. x 1,000`);
+  if (nv>0) {
+    add('natalidad','Indice Bajo Peso al Nacer',(bp/nv)*100,'%',`${bp} <2500g / ${nv} NV x 100`);
+    if (cesareas>=0 && partos>0) add('natalidad','Proporcion de Cesareas',(cesareas/partos)*100,'%',`${cesareas} cesar. / ${partos} partos x 100`);
+    if (abortos>=0) add('natalidad','Tasa de Abortos',(abortos/nv)*1000,'x 1,000 NV',`${abortos} abort. / ${nv} NV x 1,000`);
+    if (nv_adol>=0) add('natalidad','Embarazo Adolescente',(nv_adol/nv)*100,'%',`${nv_adol} NV<20a / ${nv} NV x 100`);
+  }
+  if (pob>0 && nv>0 && def>=0) add('demografico','Crecimiento Natural',((nv-def)/pob)*1000,'x 1,000',`(${nv}-${def}) / ${pob} x 1,000`);
+
+  // --- MATERNO-INFANTIL ---
+  if (emb_capt>0) add('materno','Captacion Precoz Embarazo',(emb_1t/emb_capt)*100,'%',`${emb_1t} 1erT / ${emb_capt} capt. x 100`);
+
+  // --- MORBILIDAD (EDO) ---
+  if (pob>0) {
+    if (eda>0) add('morbilidad','Incidencia EDA',(eda/pob)*1000,'x 1,000',`${eda} / ${pob} x 1,000`);
+    if (ira>0) add('morbilidad','Incidencia IRA',(ira/pob)*1000,'x 1,000',`${ira} / ${pob} x 1,000`);
+    if (tb>0) add('morbilidad','Incidencia Tuberculosis',(tb/pob)*100000,'x 100,000',`${tb} / ${pob} x 100,000`);
+    if (hepatitis>0) add('morbilidad','Incidencia Hepatitis Viral',(hepatitis/pob)*100000,'x 100,000',`${hepatitis} / ${pob} x 100,000`);
+    if (sifilis>0) add('morbilidad','Incidencia Sifilis',(sifilis/pob)*100000,'x 100,000',`${sifilis} / ${pob} x 100,000`);
+    if (blenorragia>0) add('morbilidad','Incidencia Blenorragia',(blenorragia/pob)*100000,'x 100,000',`${blenorragia} / ${pob} x 100,000`);
+    if (varicela>0) add('morbilidad','Incidencia Varicela',(varicela/pob)*100000,'x 100,000',`${varicela} / ${pob} x 100,000`);
+    if (leptospirosis>0) add('morbilidad','Incidencia Leptospirosis',(leptospirosis/pob)*100000,'x 100,000',`${leptospirosis} / ${pob} x 100,000`);
+    if (dengue>0) add('morbilidad','Incidencia Dengue',(dengue/pob)*100000,'x 100,000',`${dengue} / ${pob} x 100,000`);
+    if (intox>0) add('morbilidad','Incidencia Intox. Alimentarias',(intox/pob)*100000,'x 100,000',`${intox} / ${pob} x 100,000`);
+    if (conjuntivitis>0) add('morbilidad','Incidencia Conjuntivitis',(conjuntivitis/pob)*100000,'x 100,000',`${conjuntivitis} / ${pob} x 100,000`);
+    if (escabiosis>0) add('morbilidad','Incidencia Escabiosis',(escabiosis/pob)*100000,'x 100,000',`${escabiosis} / ${pob} x 100,000`);
+    if (casosNuevos>0) add('morbilidad','Incidencia General (consultas)',(casosNuevos/pob)*1000,'x 1,000',`${casosNuevos} nuevos / ${pob} x 1,000`);
   }
 
-  if (mf > 0 && nv > 0) {
-    indicadores.push({
-      nombre: 'Tasa de Fecundidad General',
-      valor: ((nv / mf) * 1000).toFixed(2),
-      unidad: 'x 1,000 mujeres 15-49',
-      formula: `${nv} NV / ${mf} mujeres 15-49 x 1,000`
-    });
+  // --- DISPENSARIZACION ---
+  if (dispTotal>0) {
+    add('dispensarizacion','Grupo I — Sanos',(g1/dispTotal)*100,'%',`${g1} / ${dispTotal} x 100`);
+    add('dispensarizacion','Grupo II — Con Riesgo',(g2/dispTotal)*100,'%',`${g2} / ${dispTotal} x 100`);
+    add('dispensarizacion','Grupo III — Enfermos',(g3/dispTotal)*100,'%',`${g3} / ${dispTotal} x 100`);
+    add('dispensarizacion','Grupo IV — Discapacidad',(g4/dispTotal)*100,'%',`${g4} / ${dispTotal} x 100`);
+    if (pob>0) add('dispensarizacion','Cobertura Dispensarizacion',(dispTotal/pob)*100,'%',`${dispTotal} disp. / ${pob} pob. x 100`);
   }
 
-  if (emb_capt > 0) {
-    indicadores.push({
-      nombre: 'Captacion Precoz del Embarazo',
-      valor: ((emb_1t / emb_capt) * 100).toFixed(1),
-      unidad: '%',
-      formula: `${emb_1t} captadas 1er trim. / ${emb_capt} total captadas x 100`
-    });
-  }
+  // --- INMUNIZACION ---
+  if (vbcgd>0 && vbcg>0) add('inmunizacion','Cobertura BCG',(vbcg/vbcgd)*100,'%',`${vbcg} / ${vbcgd} x 100`);
+  if (vpentad>0 && vpenta>0) add('inmunizacion','Cobertura Pentavalente',(vpenta/vpentad)*100,'%',`${vpenta} / ${vpentad} x 100`);
+  if (vprsd>0 && vprs>0) add('inmunizacion','Cobertura PRS',(vprs/vprsd)*100,'%',`${vprs} / ${vprsd} x 100`);
+  if (vpoliod>0 && vpolio>0) add('inmunizacion','Cobertura Antipolio',(vpolio/vpoliod)*100,'%',`${vpolio} / ${vpoliod} x 100`);
 
-  if (pob > 0 && casosNuevos > 0) {
-    indicadores.push({
-      nombre: 'Tasa de Incidencia General (consultas)',
-      valor: ((casosNuevos / pob) * 1000).toFixed(2),
-      unidad: 'x 1,000 hab.',
-      formula: `${casosNuevos} casos nuevos / ${pob} poblacion x 1,000`
-    });
+  // --- DEMOGRAFICOS ---
+  if (pob>0 && p60>0) add('demografico','Indice de Envejecimiento',(p60/pob)*100,'%',`${p60} 60+a / ${pob} pob. x 100`);
+  if (p1559>0) {
+    const menores15 = m1 + p14 + (gv('pob_5_14')||0);
+    add('demografico','Razon de Dependencia',((menores15+p60)/p1559)*100,'%',`(${menores15}+${p60}) / ${p1559} x 100`);
+  }
+  if (pob>0) add('demografico','Consultas por Habitante',totalConsultas/pob,'consul./hab.',`${totalConsultas} / ${pob}`);
+  if (totalConsultas>0) {
+    add('demografico','Consultas en Consultorio',(consultorio/totalConsultas)*100,'%',`${consultorio} / ${totalConsultas} x 100`);
+    add('demografico','Consultas en Terreno',(terreno/totalConsultas)*100,'%',`${terreno} / ${totalConsultas} x 100`);
   }
 
   const container = document.getElementById('resultados-indicadores');
-  if (indicadores.length === 0) {
+  if (ind.length === 0) {
     container.innerHTML = '<div class="empty"><p>Ingrese datos de poblacion y hechos vitales para calcular indicadores</p></div>';
   } else {
-    container.innerHTML = indicadores.map(ind => `
-      <div class="indicator-result">
-        <div class="name">${ind.nombre}</div>
-        <div class="value">${ind.valor} <span style="font-size:12px;font-weight:400">${ind.unidad}</span></div>
-        <div class="formula">${ind.formula}</div>
+    const catColors = {mortalidad:'#e74c3c',natalidad:'#2e86c1',morbilidad:'#e67e22',materno:'#8e44ad',dispensarizacion:'#27ae60',inmunizacion:'#16a085',demografico:'#2c3e50'};
+    container.innerHTML = ind.map(i => `
+      <div class="indicator-result" style="border-left-color:${catColors[i.cat]||'#27ae60'}">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="name">${i.nombre}</div>
+          <span class="badge" style="background:${catColors[i.cat]||'#eee'}22;color:${catColors[i.cat]||'#333'};font-size:10px">${i.cat}</span>
+        </div>
+        <div class="value" style="color:${catColors[i.cat]||'#27ae60'}">${i.valor} <span style="font-size:12px;font-weight:400">${i.unidad}</span></div>
+        <div class="formula">${i.formula}</div>
       </div>
     `).join('');
   }

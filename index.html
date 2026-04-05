@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#1a5276">
 <title>EstadSalud Cuba</title>
 <link rel="manifest" href="manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--pri:#1a5276;--sec:#2e86c1;--ok:#27ae60;--warn:#e67e22;--err:#e74c3c;--bg:#f4f6f9;--card:#fff;--txt:#2c3e50;--txt2:#7f8c8d;--radius:12px}
@@ -90,8 +91,37 @@ tr:nth-child(even){background:#f8f9fa}
   .page.print-active{display:block!important;padding:0}
   .report-preview{border:none;padding:0}
   .card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+  .btn-scan,.btn-voice,.btn-whatsapp,.btn-download,.storage-bar{display:none!important}
   @page{margin:1cm}
 }
+.btn-scan{display:flex;align-items:center;gap:8px;padding:12px 16px;background:linear-gradient(135deg,#8e44ad,#9b59b6);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;width:100%;margin-bottom:14px;justify-content:center}
+.btn-scan:active{background:#7d3c98}
+.btn-scan svg{width:22px;height:22px}
+.btn-voice{background:none;border:2px solid var(--sec);border-radius:50%;width:36px;height:36px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;padding:0}
+.btn-voice:active,.btn-voice.recording{background:var(--err);border-color:var(--err)}
+.btn-voice svg{width:18px;height:18px}
+.recording-dot{display:inline-block;width:10px;height:10px;background:var(--err);border-radius:50%;animation:pulse 1s infinite;margin-left:6px;vertical-align:middle}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.ocr-spinner{display:flex;align-items:center;gap:10px;padding:16px;background:#f5eef8;border-radius:10px;margin:10px 0;font-size:14px;color:#7d3c98}
+.ocr-spinner .spin{width:24px;height:24px;border:3px solid #ddd;border-top-color:#8e44ad;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ocr-text{background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:12px;font-size:13px;max-height:200px;overflow-y:auto;white-space:pre-wrap;font-family:monospace;margin:8px 0}
+.batch-patient{background:#f0f7ff;border:1px solid #d6eaf8;border-radius:8px;padding:10px;margin:6px 0}
+.batch-patient input,.batch-patient select{padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;width:100%}
+.batch-patient .batch-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;margin-top:6px}
+.photo-icon{cursor:pointer;font-size:16px;padding:2px 6px;background:#f5eef8;border-radius:6px;border:none}
+.photo-icon:hover{background:#e8daef}
+.storage-bar{margin-top:12px}
+.storage-bar .bar-bg{background:#eee;border-radius:6px;height:8px;overflow:hidden}
+.storage-bar .bar-fill{height:100%;border-radius:6px;transition:.3s}
+.storage-bar .bar-label{font-size:11px;color:var(--txt2);margin-top:4px}
+.btn-whatsapp{background:#25d366;color:#fff}
+.btn-whatsapp:active{background:#1ebe57}
+.btn-download{background:#3498db;color:#fff}
+.btn-download:active{background:#2980b9}
+.modal-photo{max-width:100%;max-height:60vh;border-radius:8px;display:block;margin:10px auto}
+.field-with-voice{display:flex;gap:6px;align-items:flex-start}
+.field-with-voice textarea,.field-with-voice input{flex:1}
 </style>
 </head>
 <body>
@@ -105,6 +135,14 @@ tr:nth-child(even){background:#f8f9fa}
 
 <!-- PAGE: CONSULTA -->
 <div id="page-consulta" class="page active">
+  <!-- OCR Camera Scan -->
+  <button class="btn-scan" onclick="document.getElementById('ocrFileInput').click()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    Escanear Formulario (OCR)
+  </button>
+  <input type="file" id="ocrFileInput" accept="image/*" capture="environment" style="display:none" onchange="procesarOCR(event)">
+  <div id="ocrStatus"></div>
+
   <div class="card">
     <h3>Registro de Consulta</h3>
     <div class="form-group">
@@ -123,7 +161,12 @@ tr:nth-child(even){background:#f8f9fa}
     </div>
     <div class="form-group">
       <label>Nombre y Apellidos</label>
-      <input type="text" id="c_nombre" placeholder="Nombre completo">
+      <div class="field-with-voice">
+        <input type="text" id="c_nombre" placeholder="Nombre completo">
+        <button class="btn-voice" onclick="iniciarDictado('c_nombre')" title="Dictar nombre">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2e86c1" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+      </div>
     </div>
     <div class="form-row-3">
       <div class="form-group">
@@ -148,7 +191,12 @@ tr:nth-child(even){background:#f8f9fa}
     </div>
     <div class="form-group">
       <label>Problema de Salud / Diagnostico</label>
-      <textarea id="c_diag" rows="2" placeholder="Diagnostico completo (sin abreviaturas)"></textarea>
+      <div class="field-with-voice">
+        <textarea id="c_diag" rows="2" placeholder="Diagnostico completo (sin abreviaturas)"></textarea>
+        <button class="btn-voice" onclick="iniciarDictado('c_diag')" title="Dictar diagnostico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2e86c1" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+      </div>
     </div>
     <div class="form-group">
       <label>Codigo CIE-10 <span class="cie-modal-link" onclick="abrirBuscadorCIE()">Buscar CIE-10</span></label>
@@ -551,6 +599,18 @@ tr:nth-child(even){background:#f8f9fa}
       <div class="stat-box"><div class="val" id="dt_consultas">0</div><div class="lbl">Consultas guardadas</div></div>
       <div class="stat-box"><div class="val" id="dt_dias">0</div><div class="lbl">Dias con datos</div></div>
     </div>
+    <div class="storage-bar" id="storageBar">
+      <div class="bar-bg"><div class="bar-fill" id="storageBarFill" style="width:0%;background:var(--ok)"></div></div>
+      <div class="bar-label" id="storageLabel">Calculando almacenamiento...</div>
+    </div>
+    <button class="btn btn-download" onclick="guardarEnTelefono()" style="margin-bottom:8px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Guardar en telefono
+    </button>
+    <button class="btn btn-whatsapp" onclick="compartirWhatsApp()" style="margin-bottom:8px">
+      <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.553 4.12 1.52 5.857L0 24l6.335-1.652A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.94 0-3.75-.56-5.28-1.517l-.37-.224-3.89 1.014 1.044-3.795-.247-.39A9.95 9.95 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z"/></svg>
+      Compartir por WhatsApp
+    </button>
     <button class="btn btn-pri" onclick="exportarDatos()" style="margin-bottom:8px">Exportar todo (JSON)</button>
     <button class="btn btn-warn" onclick="exportarCSV()" style="margin-bottom:8px">Exportar consultas (CSV)</button>
     <label class="btn btn-ok" style="margin-bottom:8px">
@@ -593,7 +653,7 @@ tr:nth-child(even){background:#f8f9fa}
   <div class="card">
     <h3>Acerca de</h3>
     <p style="font-size:13px;color:var(--txt2)">
-      EstadSalud v3.0<br>
+      EstadSalud v4.0<br>
       Herramienta offline para estadisticos de salud.<br>
       Modelo 18-145-02 — Actividades de Medicina Familiar.<br>
       Funciona sin internet despues de la primera carga.<br><br>
@@ -660,7 +720,7 @@ function showPage(name) {
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   if (name === 'registros') renderRegistros();
   if (name === 'indicadores') { cargarPoblacion(); calcularIndicadores(); }
-  if (name === 'datos') actualizarEstadisticas();
+  if (name === 'datos') { actualizarEstadisticas(); actualizarAlmacenamiento(); }
 }
 
 // === CHIPS ===
@@ -699,7 +759,8 @@ function guardarConsulta() {
     dx_status: dxEl ? dxEl.value : '',
     incidencia: document.getElementById('c_incidencia').checked,
     enfermeria: document.getElementById('c_enfermeria').checked,
-    conducta: document.getElementById('c_conducta').value
+    conducta: document.getElementById('c_conducta').value,
+    foto: window._ocrFotoBase64 || ''
   };
 
   const consultas = getConsultas();
@@ -717,6 +778,7 @@ function guardarConsulta() {
   document.getElementById('c_conducta').value = '';
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('input[name="c_tipo"],input[name="c_lugar"],input[name="c_dxstatus"]').forEach(r => r.checked = false);
+  window._ocrFotoBase64 = '';
 
   toast('Consulta guardada (' + consultas.length + ' total)');
 }
@@ -745,6 +807,7 @@ function renderRegistros() {
           <span style="font-size:12px">${c.diagnostico || 'Sin dx'} ${c.cie ? '('+c.cie+')' : ''}</span>
         </div>
         <div style="display:flex;gap:4px;align-items:center">
+          ${c.foto ? '<button class="photo-icon" onclick="verFoto('+c.id+')" title="Ver foto">&#128247;</button>' : ''}
           <span class="badge ${c.tipo==='primera'?'badge-info':c.tipo==='alta'?'badge-ok':'badge-warn'}">${c.tipo||'-'}</span>
           <button class="delete-btn" onclick="eliminarConsulta(${c.id})">x</button>
         </div>
@@ -1604,6 +1667,370 @@ function imprimirReporte() {
   document.getElementById('page-datos').classList.add('print-active');
   window.print();
   document.getElementById('page-datos').classList.remove('print-active');
+}
+
+// === OCR / CAMERA ===
+window._ocrFotoBase64 = '';
+
+function procesarOCR(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('ocrStatus');
+  statusEl.innerHTML = '<div class="ocr-spinner"><div class="spin"></div>Leyendo formulario... (puede tardar 15-30 seg)</div>';
+
+  // Convert to base64
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64 = e.target.result;
+    window._ocrFotoBase64 = base64;
+
+    // Run Tesseract OCR
+    Tesseract.recognize(base64, 'spa', {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const pct = Math.round((m.progress || 0) * 100);
+          statusEl.innerHTML = '<div class="ocr-spinner"><div class="spin"></div>Leyendo formulario... ' + pct + '%</div>';
+        }
+      }
+    }).then(({ data: { text } }) => {
+      statusEl.innerHTML = '';
+      mostrarResultadoOCR(text, base64);
+    }).catch(err => {
+      statusEl.innerHTML = '';
+      toast('Error OCR: ' + err.message);
+    });
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function mostrarResultadoOCR(text, foto) {
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modal-content');
+
+  // Try to parse patients from the text
+  const patients = parsearPacientesOCR(text);
+  let patientsHTML = '';
+  if (patients.length > 0) {
+    patientsHTML = '<div class="section-title">Pacientes detectados (' + patients.length + ')</div>';
+    patients.forEach((p, i) => {
+      patientsHTML += `
+        <div class="batch-patient" id="batch_p_${i}">
+          <strong style="font-size:12px;color:var(--txt2)">Paciente ${i+1}</strong>
+          <div class="batch-row">
+            <input type="text" placeholder="Nombre" value="${esc(p.nombre)}" id="bp_nombre_${i}">
+            <input type="number" placeholder="Edad" value="${p.edad}" id="bp_edad_${i}" style="max-width:60px">
+            <select id="bp_sexo_${i}"><option value="F" ${p.sexo==='F'?'selected':''}>F</option><option value="M" ${p.sexo==='M'?'selected':''}>M</option></select>
+            <input type="text" placeholder="Dx" value="${esc(p.diagnostico)}" id="bp_diag_${i}">
+          </div>
+        </div>`;
+    });
+    patientsHTML += '<button class="btn btn-ok" onclick="guardarTodosBatch(' + patients.length + ')" style="margin-top:8px">Guardar todos (' + patients.length + ' pacientes)</button>';
+  }
+
+  content.innerHTML = `
+    <h3>Resultado del escaneo</h3>
+    <img src="${foto}" style="max-width:100%;max-height:150px;border-radius:8px;display:block;margin:0 auto 10px">
+    <div class="section-title">Texto detectado:</div>
+    <div class="ocr-text">${esc(text) || '(No se detecto texto)'}</div>
+    ${patientsHTML}
+    <button class="btn btn-pri" onclick="cargarOCRenFormulario()" style="margin-top:8px">Cargar en formulario (1 paciente)</button>
+    <button class="btn btn-warn" onclick="cerrarModal()" style="margin-top:8px">Cerrar</button>
+  `;
+  modal.classList.add('show');
+
+  // Store raw text for loading into form
+  window._ocrRawText = text;
+  window._ocrParsed = patients.length > 0 ? patients[0] : null;
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function parsearPacientesOCR(text) {
+  const patients = [];
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3);
+
+  for (const line of lines) {
+    const p = { nombre: '', edad: '', sexo: '', diagnostico: '', fecha: '' };
+
+    // Try to extract date dd/mm/yyyy
+    const dateMatch = line.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (dateMatch) {
+      const d = dateMatch[1].padStart(2,'0');
+      const m = dateMatch[2].padStart(2,'0');
+      let y = dateMatch[3];
+      if (y.length === 2) y = '20' + y;
+      p.fecha = y + '-' + m + '-' + d;
+    }
+
+    // Try to find sex F/M
+    const sexMatch = line.match(/\b([FM])\b/i);
+    if (sexMatch) p.sexo = sexMatch[1].toUpperCase();
+
+    // Try to find age (number followed by optional 'a', 'anos', 'm', etc.)
+    const ageMatch = line.match(/\b(\d{1,3})\s*(?:a(?:nos?)?|anos?|a\.)\b/i);
+    if (ageMatch) {
+      p.edad = ageMatch[1];
+    } else {
+      // Just a standalone number between 1-120
+      const numMatch = line.match(/\b(\d{1,3})\b/);
+      if (numMatch && parseInt(numMatch[1]) >= 1 && parseInt(numMatch[1]) <= 120) {
+        p.edad = numMatch[1];
+      }
+    }
+
+    // The rest might be a name - take text that looks like words
+    const wordParts = line.replace(/\d+[\/\-]\d+[\/\-]\d+/g, '')
+                         .replace(/\b\d{1,3}\s*(?:a(?:nos?)?|a\.)\b/gi, '')
+                         .replace(/\b[FM]\b/gi, '')
+                         .replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ\s]/g, ' ')
+                         .trim();
+    const words = wordParts.split(/\s+/).filter(w => w.length > 1);
+    if (words.length >= 1) {
+      // First words = name, last words might be diagnosis
+      if (words.length > 3) {
+        p.nombre = words.slice(0, 3).join(' ');
+        p.diagnostico = words.slice(3).join(' ');
+      } else {
+        p.nombre = words.join(' ');
+      }
+    }
+
+    // Only add if we got something useful
+    if (p.nombre || p.edad || p.diagnostico) {
+      patients.push(p);
+    }
+  }
+  return patients;
+}
+
+function cargarOCRenFormulario() {
+  const p = window._ocrParsed;
+  if (p) {
+    if (p.nombre) document.getElementById('c_nombre').value = p.nombre;
+    if (p.edad) document.getElementById('c_edad').value = p.edad;
+    if (p.sexo) document.getElementById('c_sexo').value = p.sexo;
+    if (p.diagnostico) document.getElementById('c_diag').value = p.diagnostico;
+    if (p.fecha) document.getElementById('c_fecha').value = p.fecha;
+  }
+  cerrarModal();
+  toast('Datos cargados en formulario');
+}
+
+function guardarTodosBatch(count) {
+  const fecha = document.getElementById('c_fecha').value || new Date().toISOString().split('T')[0];
+  const ebs = document.getElementById('c_ebs').value.trim();
+  const consultas = getConsultas();
+  let saved = 0;
+
+  for (let i = 0; i < count; i++) {
+    const nombre = document.getElementById('bp_nombre_' + i).value.trim();
+    if (!nombre) continue;
+    consultas.push({
+      id: Date.now() + i,
+      fecha: fecha,
+      hc: '',
+      ebs: ebs,
+      nombre: nombre,
+      edad: document.getElementById('bp_edad_' + i).value,
+      edad_u: 'a',
+      sexo: document.getElementById('bp_sexo_' + i).value,
+      diagnostico: document.getElementById('bp_diag_' + i).value.trim(),
+      cie: '',
+      tipo: 'primera',
+      lugar: 'consultorio',
+      dx_status: '',
+      incidencia: false,
+      enfermeria: false,
+      conducta: '',
+      foto: (i === 0 && window._ocrFotoBase64) ? window._ocrFotoBase64 : ''
+    });
+    saved++;
+  }
+
+  if (saved > 0) {
+    saveConsultas(consultas);
+    cerrarModal();
+    toast(saved + ' pacientes guardados');
+    window._ocrFotoBase64 = '';
+  } else {
+    toast('No hay pacientes con nombre para guardar');
+  }
+}
+
+// === VOICE DICTATION ===
+let _recognition = null;
+let _dictTarget = null;
+
+function iniciarDictado(fieldId) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    toast('Dictado por voz no soportado en este navegador');
+    return;
+  }
+
+  // If already recording, stop
+  if (_recognition && _dictTarget === fieldId) {
+    _recognition.stop();
+    return;
+  }
+
+  _recognition = new SpeechRecognition();
+  _recognition.lang = 'es-CU';
+  _recognition.continuous = true;
+  _recognition.interimResults = false;
+  _dictTarget = fieldId;
+
+  // Visual feedback
+  const btn = event.currentTarget;
+  btn.classList.add('recording');
+  const dot = document.createElement('span');
+  dot.className = 'recording-dot';
+  dot.id = 'recDot';
+  btn.parentElement.appendChild(dot);
+
+  _recognition.onresult = function(e) {
+    const field = document.getElementById(fieldId);
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        transcript += e.results[i][0].transcript;
+      }
+    }
+    if (field.tagName === 'TEXTAREA') {
+      field.value += (field.value ? ' ' : '') + transcript;
+    } else {
+      field.value += (field.value ? ' ' : '') + transcript;
+    }
+  };
+
+  _recognition.onerror = function(e) {
+    if (e.error === 'not-allowed') {
+      toast('Permiso de microfono denegado');
+    } else if (e.error !== 'no-speech') {
+      // Try fallback to es-ES
+      if (_recognition.lang === 'es-CU') {
+        _recognition.lang = 'es-ES';
+        try { _recognition.start(); return; } catch(ex) {}
+      }
+      toast('Error de voz: ' + e.error);
+    }
+    limpiarDictado(btn);
+  };
+
+  _recognition.onend = function() {
+    limpiarDictado(btn);
+  };
+
+  try {
+    _recognition.start();
+    toast('Escuchando... toca de nuevo para parar');
+  } catch(e) {
+    toast('Error al iniciar dictado');
+    limpiarDictado(btn);
+  }
+}
+
+function limpiarDictado(btn) {
+  btn.classList.remove('recording');
+  const dot = document.getElementById('recDot');
+  if (dot) dot.remove();
+  _recognition = null;
+  _dictTarget = null;
+}
+
+// === PHOTO VIEWER ===
+function verFoto(id) {
+  const consultas = getConsultas();
+  const c = consultas.find(x => x.id === id);
+  if (!c || !c.foto) { toast('No hay foto para este registro'); return; }
+
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <h3>Foto del formulario</h3>
+    <p style="font-size:12px;color:var(--txt2)">${c.nombre} - ${c.fecha}</p>
+    <img src="${c.foto}" class="modal-photo">
+    <button class="btn btn-warn" onclick="cerrarModal()" style="margin-top:10px">Cerrar</button>
+  `;
+  modal.classList.add('show');
+}
+
+// === STORAGE INDICATOR ===
+function actualizarAlmacenamiento() {
+  try {
+    let total = 0;
+    for (let key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        total += localStorage.getItem(key).length * 2; // UTF-16
+      }
+    }
+    const usedMB = (total / (1024 * 1024)).toFixed(2);
+    const maxMB = 5; // approximate localStorage limit
+    const pct = Math.min((total / (maxMB * 1024 * 1024)) * 100, 100);
+    const fill = document.getElementById('storageBarFill');
+    const label = document.getElementById('storageLabel');
+    if (fill && label) {
+      fill.style.width = pct + '%';
+      fill.style.background = pct > 80 ? 'var(--err)' : pct > 60 ? 'var(--warn)' : 'var(--ok)';
+      label.textContent = usedMB + ' MB usado de ~' + maxMB + ' MB (' + Math.round(pct) + '%)';
+      if (pct > 80) label.textContent += ' - Espacio bajo!';
+    }
+  } catch(e) {}
+}
+
+// === SAVE TO PHONE ===
+function guardarEnTelefono() {
+  const data = {
+    version: '4.0',
+    fecha_export: new Date().toISOString(),
+    consultas: getConsultas(),
+    poblacion: getPoblacion()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'EstadSalud_' + new Date().toISOString().split('T')[0] + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Archivo guardado en Descargas');
+}
+
+// === WHATSAPP SHARE ===
+function compartirWhatsApp() {
+  const consultas = getConsultas();
+  const hoy = new Date();
+  const mes = hoy.getMonth() + 1;
+  const ano = hoy.getFullYear();
+  const meses = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  const delMes = consultas.filter(c => {
+    if (!c.fecha) return false;
+    const d = new Date(c.fecha);
+    return d.getMonth() + 1 === mes && d.getFullYear() === ano;
+  });
+
+  const primera = delMes.filter(c => c.tipo === 'primera').length;
+  const seguimiento = delMes.filter(c => c.tipo === 'seguimiento').length;
+  const casosNuevos = delMes.filter(c => c.incidencia).length;
+  const pob = getPoblacion();
+
+  let texto = `*EstadSalud - Resumen ${meses[mes]} ${ano}*\n`;
+  texto += `Poblacion: ${pob.pob_total || '?'}\n`;
+  texto += `Total consultas del mes: ${delMes.length}\n`;
+  texto += `- Primera vez: ${primera}\n`;
+  texto += `- Seguimiento: ${seguimiento}\n`;
+  texto += `- Casos nuevos: ${casosNuevos}\n`;
+  texto += `\n_Generado por EstadSalud v4.0_`;
+
+  const encoded = encodeURIComponent(texto);
+  window.open('https://wa.me/?text=' + encoded, '_blank');
 }
 
 // Register service worker

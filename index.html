@@ -122,6 +122,24 @@ tr:nth-child(even){background:#f8f9fa}
 .modal-photo{max-width:100%;max-height:60vh;border-radius:8px;display:block;margin:10px auto}
 .field-with-voice{display:flex;gap:6px;align-items:flex-start}
 .field-with-voice textarea,.field-with-voice input{flex:1}
+.sync-section{border-top:1px solid #eee;padding-top:12px;margin-top:12px}
+.sync-status{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:10px}
+.sync-status.synced{background:#d5f5e3;color:#1e8449}
+.sync-status.pending{background:#fdebd0;color:#b7550a}
+.sync-status.offline{background:#eee;color:#7f8c8d}
+.sync-status.error{background:#fadbd8;color:#922b21}
+.sync-status .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sync-status.synced .dot{background:#27ae60}
+.sync-status.pending .dot{background:#e67e22}
+.sync-status.offline .dot{background:#95a5a6}
+.sync-status.error .dot{background:#e74c3c}
+.device-id-box{background:#f0f7ff;border:1px solid #d6eaf8;border-radius:8px;padding:10px;font-size:12px;margin-bottom:10px;word-break:break-all}
+.device-id-box strong{font-size:13px;color:var(--pri)}
+.btn-sync{background:linear-gradient(135deg,#2e86c1,#1a5276);color:#fff}
+.btn-sync:active{background:#154360}
+.btn-restore{background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff}
+.btn-restore:active{background:#196f3d}
+.sync-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:6px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -603,6 +621,29 @@ tr:nth-child(even){background:#f8f9fa}
       <div class="bar-bg"><div class="bar-fill" id="storageBarFill" style="width:0%;background:var(--ok)"></div></div>
       <div class="bar-label" id="storageLabel">Calculando almacenamiento...</div>
     </div>
+    <!-- CLOUD SYNC SECTION -->
+    <div class="sync-section">
+      <h3 style="font-size:14px;margin-bottom:8px;color:var(--pri)">Sincronizacion en la nube</h3>
+      <div id="syncStatus" class="sync-status offline">
+        <div class="dot"></div>
+        <span id="syncStatusText">Sin sincronizar</span>
+      </div>
+      <div class="device-id-box">
+        <strong>ID del dispositivo:</strong><br>
+        <span id="deviceIdDisplay">-</span>
+        <button class="btn-sm" onclick="copiarDeviceId()" style="margin-left:6px;background:var(--sec);color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer">Copiar</button>
+      </div>
+      <button class="btn btn-sync" onclick="sincronizarNube()" style="margin-bottom:8px" id="btnSync">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M3.34 16A9.96 9.96 0 0112 2c3.17 0 5.98 1.47 7.81 3.77"/><path d="M20.66 8A9.96 9.96 0 0112 22c-3.17 0-5.98-1.47-7.81-3.77"/></svg>
+        Sincronizar con la nube
+      </button>
+      <button class="btn btn-restore" onclick="restaurarDesdeNube()" style="margin-bottom:8px" id="btnRestore">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Restaurar desde la nube
+      </button>
+      <p style="font-size:11px;color:var(--txt2);margin-bottom:12px">Guarda tu ID para recuperar datos en otro dispositivo. La sincronizacion es automatica cuando hay internet.</p>
+    </div>
+
     <button class="btn btn-download" onclick="guardarEnTelefono()" style="margin-bottom:8px">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Guardar en telefono
@@ -653,10 +694,11 @@ tr:nth-child(even){background:#f8f9fa}
   <div class="card">
     <h3>Acerca de</h3>
     <p style="font-size:13px;color:var(--txt2)">
-      EstadSalud v4.0<br>
+      EstadSalud v4.1<br>
       Herramienta offline para estadisticos de salud.<br>
       Modelo 18-145-02 — Actividades de Medicina Familiar.<br>
-      Funciona sin internet despues de la primera carga.<br><br>
+      Funciona sin internet despues de la primera carga.<br>
+      Sincronizacion en la nube cuando hay conexion.<br><br>
       Hecho con amor por Santtana y Sil, 2026.
     </p>
   </div>
@@ -781,6 +823,8 @@ function guardarConsulta() {
   window._ocrFotoBase64 = '';
 
   toast('Consulta guardada (' + consultas.length + ' total)');
+  // Auto-sync after saving
+  if (typeof autoSync === 'function') setTimeout(autoSync, 1000);
 }
 
 // === REGISTROS ===
@@ -1078,6 +1122,7 @@ function updateStatus() {
   const badge = document.getElementById('statusBadge');
   if (navigator.onLine) { badge.textContent = 'ONLINE'; badge.style.background = '#2e86c1'; }
   else { badge.textContent = 'OFFLINE'; badge.style.background = '#27ae60'; }
+  if (typeof actualizarSyncStatus === 'function') actualizarSyncStatus();
 }
 window.addEventListener('online', updateStatus);
 window.addEventListener('offline', updateStatus);
@@ -2032,6 +2077,188 @@ function compartirWhatsApp() {
   const encoded = encodeURIComponent(texto);
   window.open('https://wa.me/?text=' + encoded, '_blank');
 }
+
+// === CLOUD SYNC ===
+const SYNC_URL = 'https://estadsalud-sync.onrender.com';
+const SYNC_DEVICE_KEY = 'estadsalud_device_id';
+const SYNC_LAST_KEY = 'estadsalud_last_sync';
+
+function getDeviceId() {
+  let id = localStorage.getItem(SYNC_DEVICE_KEY);
+  if (!id) {
+    id = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem(SYNC_DEVICE_KEY, id);
+  }
+  return id;
+}
+
+function initSync() {
+  const id = getDeviceId();
+  const el = document.getElementById('deviceIdDisplay');
+  if (el) el.textContent = id;
+  actualizarSyncStatus();
+}
+
+function actualizarSyncStatus() {
+  const statusEl = document.getElementById('syncStatus');
+  const textEl = document.getElementById('syncStatusText');
+  if (!statusEl || !textEl) return;
+  const lastSync = localStorage.getItem(SYNC_LAST_KEY);
+  if (!navigator.onLine) {
+    statusEl.className = 'sync-status offline';
+    textEl.textContent = 'Sin conexion' + (lastSync ? ' (ultimo: ' + new Date(lastSync).toLocaleString() + ')' : '');
+  } else if (lastSync) {
+    statusEl.className = 'sync-status synced';
+    textEl.textContent = 'Sincronizado: ' + new Date(lastSync).toLocaleString();
+  } else {
+    statusEl.className = 'sync-status pending';
+    textEl.textContent = 'Pendiente de sincronizar';
+  }
+}
+
+function copiarDeviceId() {
+  const id = getDeviceId();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(id).then(() => toast('ID copiado'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = id;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('ID copiado');
+  }
+}
+
+async function sincronizarNube() {
+  if (!navigator.onLine) { toast('Sin conexion a internet'); return; }
+  const btn = document.getElementById('btnSync');
+  const origHTML = btn.innerHTML;
+  btn.innerHTML = '<span class="sync-spinner"></span> Sincronizando...';
+  btn.disabled = true;
+  try {
+    const deviceId = getDeviceId();
+    const data = {
+      consultas: getConsultas(),
+      poblacion: getPoblacion(),
+      hechos_vitales: JSON.parse(localStorage.getItem(HV_KEY) || '[]'),
+      version: '4.0'
+    };
+    const resp = await fetch(SYNC_URL + '/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ device_id: deviceId, data: data })
+    });
+    const result = await resp.json();
+    if (result.status === 'saved') {
+      localStorage.setItem(SYNC_LAST_KEY, new Date().toISOString());
+      toast('Datos sincronizados con la nube');
+      actualizarSyncStatus();
+    } else {
+      toast('Error al sincronizar');
+      setSyncError();
+    }
+  } catch (e) {
+    console.error('Sync error:', e);
+    toast('Error de conexion con el servidor');
+    setSyncError();
+  } finally {
+    btn.innerHTML = origHTML;
+    btn.disabled = false;
+  }
+}
+
+async function restaurarDesdeNube() {
+  if (!navigator.onLine) { toast('Sin conexion a internet'); return; }
+  const deviceIdInput = prompt('Introduce el ID del dispositivo (deja vacio para usar el actual):', getDeviceId());
+  if (deviceIdInput === null) return;
+  const deviceId = deviceIdInput.trim() || getDeviceId();
+  const btn = document.getElementById('btnRestore');
+  const origHTML = btn.innerHTML;
+  btn.innerHTML = '<span class="sync-spinner"></span> Restaurando...';
+  btn.disabled = true;
+  try {
+    const resp = await fetch(SYNC_URL + '/sync/' + encodeURIComponent(deviceId));
+    const result = await resp.json();
+    if (result.status === 'found' && result.data) {
+      const cloud = result.data;
+      // Merge consultas (additive by ID)
+      if (cloud.consultas && cloud.consultas.length > 0) {
+        const local = getConsultas();
+        const localIds = new Set(local.map(c => c.id));
+        const nuevas = cloud.consultas.filter(c => !localIds.has(c.id));
+        if (nuevas.length > 0) {
+          saveConsultas([...local, ...nuevas]);
+        }
+        toast('Restaurado: ' + nuevas.length + ' consultas nuevas de ' + cloud.consultas.length + ' en la nube');
+      } else {
+        toast('No hay consultas en la nube');
+      }
+      // Merge poblacion (cloud overwrites if local is empty)
+      if (cloud.poblacion && Object.keys(cloud.poblacion).length > 0) {
+        const localPob = getPoblacion();
+        if (!localPob || Object.keys(localPob).length === 0) {
+          savePoblacion(cloud.poblacion);
+        }
+      }
+      // Merge hechos vitales
+      if (cloud.hechos_vitales && cloud.hechos_vitales.length > 0) {
+        const localHV = JSON.parse(localStorage.getItem(HV_KEY) || '[]');
+        const localHVIds = new Set(localHV.map(h => h.id));
+        const nuevosHV = cloud.hechos_vitales.filter(h => !localHVIds.has(h.id));
+        if (nuevosHV.length > 0) {
+          localStorage.setItem(HV_KEY, JSON.stringify([...localHV, ...nuevosHV]));
+        }
+      }
+      // If using a different device ID, save it as current
+      if (deviceId !== getDeviceId()) {
+        localStorage.setItem(SYNC_DEVICE_KEY, deviceId);
+        document.getElementById('deviceIdDisplay').textContent = deviceId;
+      }
+      localStorage.setItem(SYNC_LAST_KEY, new Date().toISOString());
+      actualizarSyncStatus();
+      actualizarEstadisticas();
+    } else if (result.status === 'not_found') {
+      toast('No se encontraron datos para ese ID');
+    }
+  } catch (e) {
+    console.error('Restore error:', e);
+    toast('Error de conexion con el servidor');
+  } finally {
+    btn.innerHTML = origHTML;
+    btn.disabled = false;
+  }
+}
+
+function setSyncError() {
+  const statusEl = document.getElementById('syncStatus');
+  const textEl = document.getElementById('syncStatusText');
+  if (statusEl && textEl) {
+    statusEl.className = 'sync-status error';
+    textEl.textContent = 'Error de sincronizacion';
+  }
+}
+
+// Auto-sync when online (only if synced at least once before)
+function autoSync() {
+  const lastSync = localStorage.getItem(SYNC_LAST_KEY);
+  if (lastSync && navigator.onLine) {
+    sincronizarNube();
+  }
+}
+
+window.addEventListener('online', function() {
+  actualizarSyncStatus();
+  setTimeout(autoSync, 2000);
+});
+window.addEventListener('offline', actualizarSyncStatus);
+
+// Init sync on load
+initSync();
+
+// Auto-sync on page load if previously synced
+setTimeout(autoSync, 3000);
 
 // Register service worker
 if ('serviceWorker' in navigator) {

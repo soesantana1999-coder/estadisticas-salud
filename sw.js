@@ -1,4 +1,4 @@
-const CACHE_NAME = 'estadsalud-v1';
+const CACHE_NAME = 'estadsalud-v2';
 const FILES = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
@@ -14,6 +14,11 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Don't cache API calls (sync backend)
+  if (e.request.url.includes('onrender.com') || e.request.url.includes('/sync')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
       const clone = resp.clone();

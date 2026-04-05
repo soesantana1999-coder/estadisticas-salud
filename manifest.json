@@ -1,0 +1,22 @@
+{
+  "name": "EstadSalud Cuba",
+  "short_name": "EstadSalud",
+  "description": "Herramienta offline para estadisticos de salud - Medicina Familiar",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme_color": "#1a5276",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

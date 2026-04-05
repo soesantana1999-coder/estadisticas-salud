@@ -68,6 +68,30 @@ tr:nth-child(even){background:#f8f9fa}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
 .modal h3{margin-bottom:12px}
 .delete-btn{color:var(--err);background:none;border:none;font-size:18px;cursor:pointer;padding:4px}
+.cie-search{position:relative}
+.cie-results{max-height:60vh;overflow-y:auto}
+.cie-item{display:flex;justify-content:space-between;align-items:center;padding:10px 8px;border-bottom:1px solid #eee;gap:8px}
+.cie-item:active{background:#f0f7ff}
+.cie-code{font-weight:700;color:var(--pri);font-size:14px;min-width:60px}
+.cie-name{flex:1;font-size:13px}
+.cie-cat{font-size:10px;color:var(--txt2);display:block}
+.btn-copy{padding:6px 10px;font-size:11px;background:var(--sec);color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap}
+.cie-count{font-size:12px;color:var(--txt2);margin:8px 0}
+.cie-modal-link{color:var(--sec);text-decoration:underline;cursor:pointer;font-size:12px}
+.report-preview{background:#fff;padding:20px;border:1px solid #ddd;border-radius:8px;margin-top:12px;font-size:13px}
+.report-preview h2{text-align:center;font-size:16px;margin-bottom:4px}
+.report-preview table{width:100%;margin:10px 0}
+.report-preview th{background:var(--pri);color:#fff;padding:6px;font-size:11px}
+.report-preview td{padding:5px 6px;border:1px solid #ddd;font-size:12px}
+@media print{
+  body{padding:0;background:#fff}
+  .header,.tabs,.toast,.btn,.form-group,.form-row,.form-row-3,.chip,.modal-bg,.no-print{display:none!important}
+  .page{display:none!important}
+  .page.print-active{display:block!important;padding:0}
+  .report-preview{border:none;padding:0}
+  .card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+  @page{margin:1cm}
+}
 </style>
 </head>
 <body>
@@ -127,8 +151,8 @@ tr:nth-child(even){background:#f8f9fa}
       <textarea id="c_diag" rows="2" placeholder="Diagnostico completo (sin abreviaturas)"></textarea>
     </div>
     <div class="form-group">
-      <label>Codigo CIE-10</label>
-      <input type="text" id="c_cie" placeholder="Ej: J06.9" maxlength="10">
+      <label>Codigo CIE-10 <span class="cie-modal-link" onclick="abrirBuscadorCIE()">Buscar CIE-10</span></label>
+      <input type="text" id="c_cie" placeholder="Ej: J06.9" maxlength="10" onfocus="abrirBuscadorCIE()">
     </div>
     <div class="form-group">
       <label>Tipo de Consulta</label>
@@ -206,6 +230,18 @@ tr:nth-child(even){background:#f8f9fa}
       <div class="stat-box"><div class="val" id="rd_seguimiento">0</div><div class="lbl">Seguimiento</div></div>
       <div class="stat-box"><div class="val" id="rd_incidencia">0</div><div class="lbl">Casos nuevos</div></div>
     </div>
+  </div>
+</div>
+
+<!-- PAGE: CIE-10 -->
+<div id="page-cie10" class="page">
+  <div class="card">
+    <h3>Buscador CIE-10 Offline</h3>
+    <div class="form-group cie-search">
+      <input type="text" id="cie_buscar" placeholder="Buscar enfermedad o codigo (ej: diabetes, J06)" oninput="buscarCIE()" autocomplete="off">
+    </div>
+    <div class="cie-count" id="cie_count">Escriba para buscar entre 200+ codigos CIE-10</div>
+    <div class="cie-results" id="cie_resultados"></div>
   </div>
 </div>
 
@@ -524,9 +560,40 @@ tr:nth-child(even){background:#f8f9fa}
     <button class="btn btn-err" onclick="confirmarBorrar()">Borrar todos los datos</button>
   </div>
   <div class="card">
+    <h3>Reportes</h3>
+    <div class="form-row" style="margin-bottom:10px">
+      <div class="form-group">
+        <label>Semana estadistica</label>
+        <input type="number" id="rep_semana" min="1" max="52" placeholder="1-52">
+      </div>
+      <div class="form-group">
+        <label>Ano</label>
+        <input type="number" id="rep_ano" value="2026">
+      </div>
+    </div>
+    <button class="btn btn-pri" onclick="generarReporteEDO()" style="margin-bottom:8px">Generar Reporte EDO Semanal</button>
+    <div class="form-row" style="margin-bottom:10px;margin-top:12px">
+      <div class="form-group">
+        <label>Mes</label>
+        <select id="rep_mes">
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ano</label>
+        <input type="number" id="rep_mes_ano" value="2026">
+      </div>
+    </div>
+    <button class="btn btn-ok" onclick="generarReporteMensual()">Generar Reporte Mensual</button>
+    <div id="reporte_container"></div>
+  </div>
+  <div class="card">
     <h3>Acerca de</h3>
     <p style="font-size:13px;color:var(--txt2)">
-      EstadSalud v1.0<br>
+      EstadSalud v3.0<br>
       Herramienta offline para estadisticos de salud.<br>
       Modelo 18-145-02 — Actividades de Medicina Familiar.<br>
       Funciona sin internet despues de la primera carga.<br><br>
@@ -549,6 +616,10 @@ tr:nth-child(even){background:#f8f9fa}
   <button class="tab" onclick="showPage('registros')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     Registros
+  </button>
+  <button class="tab" onclick="showPage('cie10')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+    CIE-10
   </button>
   <button class="tab" onclick="showPage('indicadores')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
@@ -584,7 +655,7 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  const pages = ['consulta','registros','indicadores','edo','datos'];
+  const pages = ['consulta','registros','cie10','indicadores','datos'];
   const idx = pages.indexOf(name);
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   if (name === 'registros') renderRegistros();
@@ -948,6 +1019,592 @@ function updateStatus() {
 window.addEventListener('online', updateStatus);
 window.addEventListener('offline', updateStatus);
 updateStatus();
+
+// === CIE-10 DATABASE ===
+const CIE10 = [
+// Infecciosas
+{c:'A02',n:'Salmonelosis',cat:'Infecciosas'},{c:'A03',n:'Shigelosis',cat:'Infecciosas'},
+{c:'A04',n:'Otras infecciones intestinales bacterianas',cat:'Infecciosas'},
+{c:'A05',n:'Intoxicacion alimentaria bacteriana',cat:'Infecciosas'},
+{c:'A06',n:'Amebiasis',cat:'Infecciosas'},{c:'A07',n:'Giardiasis',cat:'Infecciosas'},
+{c:'A08',n:'Infecciones intestinales viricas',cat:'Infecciosas'},
+{c:'A09',n:'Enfermedad diarreica aguda (EDA)',cat:'Infecciosas'},
+{c:'A15',n:'Tuberculosis respiratoria confirmada bacteriologicamente',cat:'Infecciosas'},
+{c:'A15.0',n:'TB pulmonar con baciloscopia positiva',cat:'Infecciosas'},
+{c:'A15.3',n:'TB pulmonar confirmada por cultivo',cat:'Infecciosas'},
+{c:'A16',n:'Tuberculosis respiratoria sin confirmacion',cat:'Infecciosas'},
+{c:'A16.0',n:'TB pulmonar con baciloscopia negativa',cat:'Infecciosas'},
+{c:'A16.2',n:'TB pulmonar sin bacteriologia',cat:'Infecciosas'},
+{c:'A27',n:'Leptospirosis',cat:'Infecciosas'},{c:'A27.0',n:'Leptospirosis icterohemorragica',cat:'Infecciosas'},
+{c:'A27.9',n:'Leptospirosis no especificada',cat:'Infecciosas'},
+{c:'A37',n:'Tos ferina',cat:'Infecciosas'},{c:'A38',n:'Escarlatina',cat:'Infecciosas'},
+{c:'A50',n:'Sifilis congenita',cat:'Infecciosas'},{c:'A51',n:'Sifilis precoz',cat:'Infecciosas'},
+{c:'A52',n:'Sifilis tardia',cat:'Infecciosas'},{c:'A53',n:'Sifilis no especificada',cat:'Infecciosas'},
+{c:'A53.9',n:'Sifilis no especificada',cat:'Infecciosas'},
+{c:'A54',n:'Blenorragia (gonorrea)',cat:'Infecciosas'},
+{c:'A56',n:'Infeccion por Chlamydia',cat:'Infecciosas'},
+{c:'A60',n:'Herpes genital',cat:'Infecciosas'},
+{c:'A63',n:'Condilomas acuminados',cat:'Infecciosas'},
+{c:'A69.2',n:'Enfermedad de Lyme',cat:'Infecciosas'},
+{c:'A90',n:'Dengue (fiebre del dengue)',cat:'Infecciosas'},
+{c:'A91',n:'Dengue hemorragico',cat:'Infecciosas'},
+{c:'B01',n:'Varicela',cat:'Infecciosas'},{c:'B01.9',n:'Varicela sin complicaciones',cat:'Infecciosas'},
+{c:'B02',n:'Herpes zoster',cat:'Infecciosas'},
+{c:'B05',n:'Sarampion',cat:'Infecciosas'},{c:'B06',n:'Rubeola',cat:'Infecciosas'},
+{c:'B15',n:'Hepatitis aguda A',cat:'Infecciosas'},{c:'B16',n:'Hepatitis aguda B',cat:'Infecciosas'},
+{c:'B17',n:'Otras hepatitis virales agudas',cat:'Infecciosas'},
+{c:'B17.1',n:'Hepatitis aguda C',cat:'Infecciosas'},
+{c:'B18',n:'Hepatitis viral cronica',cat:'Infecciosas'},
+{c:'B18.1',n:'Hepatitis cronica B sin agente delta',cat:'Infecciosas'},
+{c:'B18.2',n:'Hepatitis cronica C',cat:'Infecciosas'},
+{c:'B19',n:'Hepatitis viral no especificada',cat:'Infecciosas'},
+{c:'B20',n:'VIH con enfermedades infecciosas',cat:'Infecciosas'},
+{c:'B21',n:'VIH con neoplasias malignas',cat:'Infecciosas'},
+{c:'B22',n:'VIH con otras enfermedades',cat:'Infecciosas'},
+{c:'B23',n:'VIH con otras afecciones',cat:'Infecciosas'},
+{c:'B24',n:'Enfermedad por VIH sin especificar',cat:'Infecciosas'},
+{c:'B26',n:'Parotiditis infecciosa',cat:'Infecciosas'},
+{c:'B30',n:'Conjuntivitis viral',cat:'Infecciosas'},
+{c:'B35',n:'Dermatofitosis (tina)',cat:'Infecciosas'},{c:'B35.0',n:'Tina de la cabeza',cat:'Dermatologicas'},
+{c:'B35.1',n:'Tina de las unas (onicomicosis)',cat:'Dermatologicas'},
+{c:'B35.3',n:'Tina del pie',cat:'Dermatologicas'},
+{c:'B36',n:'Pitiriasis versicolor',cat:'Dermatologicas'},
+{c:'B37',n:'Candidiasis',cat:'Infecciosas'},{c:'B37.0',n:'Candidiasis oral',cat:'Infecciosas'},
+{c:'B37.3',n:'Candidiasis vulvovaginal',cat:'Infecciosas'},
+{c:'B49',n:'Micosis no especificada',cat:'Infecciosas'},
+{c:'B65',n:'Esquistosomiasis',cat:'Infecciosas'},
+{c:'B68',n:'Teniasis',cat:'Infecciosas'},{c:'B77',n:'Ascariasis',cat:'Infecciosas'},
+{c:'B78',n:'Estrongiloidiasis',cat:'Infecciosas'},{c:'B79',n:'Tricuriasis',cat:'Infecciosas'},
+{c:'B80',n:'Enterobiasis (oxiuros)',cat:'Infecciosas'},
+{c:'B82',n:'Parasitosis intestinal sin especificar',cat:'Infecciosas'},
+{c:'B83',n:'Otras helmintiasis',cat:'Infecciosas'},
+{c:'B85',n:'Pediculosis (piojos)',cat:'Dermatologicas'},
+{c:'B85.0',n:'Pediculosis de la cabeza',cat:'Dermatologicas'},
+{c:'B86',n:'Escabiosis (sarna)',cat:'Dermatologicas'},
+{c:'G00',n:'Meningitis bacteriana',cat:'Infecciosas'},
+{c:'G01',n:'Meningitis en enfermedades infecciosas',cat:'Infecciosas'},
+{c:'G02',n:'Meningitis en otras enfermedades',cat:'Infecciosas'},
+{c:'G03',n:'Meningitis por otras causas',cat:'Infecciosas'},
+// Respiratorias
+{c:'J00',n:'Rinofaringitis aguda (resfriado comun)',cat:'Respiratorias'},
+{c:'J01',n:'Sinusitis aguda',cat:'Respiratorias'},{c:'J01.9',n:'Sinusitis aguda no especificada',cat:'Respiratorias'},
+{c:'J02',n:'Faringitis aguda',cat:'Respiratorias'},{c:'J02.9',n:'Faringitis aguda no especificada',cat:'Respiratorias'},
+{c:'J03',n:'Amigdalitis aguda',cat:'Respiratorias'},{c:'J03.9',n:'Amigdalitis aguda no especificada',cat:'Respiratorias'},
+{c:'J04',n:'Laringitis aguda',cat:'Respiratorias'},{c:'J05',n:'Laringotraqueitis obstructiva aguda (crup)',cat:'Respiratorias'},
+{c:'J06',n:'Infeccion respiratoria aguda (IRA) de vias superiores',cat:'Respiratorias'},
+{c:'J06.9',n:'IRA de vias superiores no especificada',cat:'Respiratorias'},
+{c:'J10',n:'Influenza por virus identificado',cat:'Respiratorias'},
+{c:'J11',n:'Influenza por virus no identificado (gripe)',cat:'Respiratorias'},
+{c:'J12',n:'Neumonia viral',cat:'Respiratorias'},{c:'J13',n:'Neumonia por Streptococcus pneumoniae',cat:'Respiratorias'},
+{c:'J14',n:'Neumonia por Haemophilus influenzae',cat:'Respiratorias'},
+{c:'J15',n:'Neumonia bacteriana',cat:'Respiratorias'},
+{c:'J18',n:'Neumonia por microorganismo no especificado',cat:'Respiratorias'},
+{c:'J18.9',n:'Neumonia no especificada',cat:'Respiratorias'},
+{c:'J20',n:'Bronquitis aguda',cat:'Respiratorias'},{c:'J21',n:'Bronquiolitis aguda',cat:'Respiratorias'},
+{c:'J22',n:'Infeccion aguda de vias respiratorias inferiores',cat:'Respiratorias'},
+{c:'J30',n:'Rinitis alergica',cat:'Respiratorias'},{c:'J30.1',n:'Rinitis alergica por polen',cat:'Respiratorias'},
+{c:'J31',n:'Rinitis cronica',cat:'Respiratorias'},
+{c:'J40',n:'Bronquitis no especificada como aguda o cronica',cat:'Respiratorias'},
+{c:'J41',n:'Bronquitis cronica simple',cat:'Respiratorias'},
+{c:'J42',n:'Bronquitis cronica no especificada',cat:'Respiratorias'},
+{c:'J44',n:'EPOC (enfermedad pulmonar obstructiva cronica)',cat:'Respiratorias'},
+{c:'J44.0',n:'EPOC con infeccion aguda de vias respiratorias',cat:'Respiratorias'},
+{c:'J44.1',n:'EPOC con exacerbacion aguda',cat:'Respiratorias'},
+{c:'J45',n:'Asma bronquial',cat:'Respiratorias'},{c:'J45.0',n:'Asma predominantemente alergica',cat:'Respiratorias'},
+{c:'J45.1',n:'Asma no alergica',cat:'Respiratorias'},{c:'J45.9',n:'Asma no especificada',cat:'Respiratorias'},
+{c:'J46',n:'Estado asmatico (asma aguda grave)',cat:'Respiratorias'},
+// Cardiovasculares
+{c:'I10',n:'Hipertension arterial esencial (primaria)',cat:'Cardiovasculares'},
+{c:'I11',n:'Enfermedad cardiaca hipertensiva',cat:'Cardiovasculares'},
+{c:'I12',n:'Enfermedad renal hipertensiva',cat:'Cardiovasculares'},
+{c:'I13',n:'Enfermedad cardiorrenal hipertensiva',cat:'Cardiovasculares'},
+{c:'I15',n:'Hipertension secundaria',cat:'Cardiovasculares'},
+{c:'I20',n:'Angina de pecho',cat:'Cardiovasculares'},{c:'I20.0',n:'Angina inestable',cat:'Cardiovasculares'},
+{c:'I21',n:'Infarto agudo de miocardio',cat:'Cardiovasculares'},
+{c:'I25',n:'Cardiopatia isquemica cronica',cat:'Cardiovasculares'},
+{c:'I25.9',n:'Cardiopatia isquemica cronica no especificada',cat:'Cardiovasculares'},
+{c:'I47',n:'Taquicardia paroxistica',cat:'Cardiovasculares'},
+{c:'I48',n:'Fibrilacion y aleteo auricular',cat:'Cardiovasculares'},
+{c:'I49',n:'Otras arritmias cardiacas',cat:'Cardiovasculares'},
+{c:'I50',n:'Insuficiencia cardiaca',cat:'Cardiovasculares'},
+{c:'I50.0',n:'Insuficiencia cardiaca congestiva',cat:'Cardiovasculares'},
+{c:'I60',n:'Hemorragia subaracnoidea',cat:'Cardiovasculares'},
+{c:'I61',n:'Hemorragia intracerebral',cat:'Cardiovasculares'},
+{c:'I63',n:'Infarto cerebral (ACV isquemico)',cat:'Cardiovasculares'},
+{c:'I64',n:'Accidente cerebrovascular no especificado',cat:'Cardiovasculares'},
+{c:'I67',n:'Otras enfermedades cerebrovasculares',cat:'Cardiovasculares'},
+{c:'I69',n:'Secuelas de enfermedad cerebrovascular',cat:'Cardiovasculares'},
+{c:'I70',n:'Aterosclerosis',cat:'Cardiovasculares'},
+{c:'I73',n:'Enfermedad vascular periferica',cat:'Cardiovasculares'},
+{c:'I80',n:'Tromboflebitis',cat:'Cardiovasculares'},
+{c:'I83',n:'Varices de miembros inferiores',cat:'Cardiovasculares'},
+{c:'I84',n:'Hemorroides',cat:'Cardiovasculares'},
+// Endocrinas
+{c:'E03',n:'Hipotiroidismo',cat:'Endocrinas'},{c:'E03.9',n:'Hipotiroidismo no especificado',cat:'Endocrinas'},
+{c:'E05',n:'Hipertiroidismo (tirotoxicosis)',cat:'Endocrinas'},
+{c:'E10',n:'Diabetes mellitus tipo 1',cat:'Endocrinas'},
+{c:'E11',n:'Diabetes mellitus tipo 2',cat:'Endocrinas'},
+{c:'E11.9',n:'DM tipo 2 sin complicaciones',cat:'Endocrinas'},
+{c:'E12',n:'Diabetes mellitus relacionada con desnutricion',cat:'Endocrinas'},
+{c:'E13',n:'Otra diabetes mellitus especificada',cat:'Endocrinas'},
+{c:'E14',n:'Diabetes mellitus no especificada',cat:'Endocrinas'},
+{c:'E40',n:'Kwashiorkor',cat:'Endocrinas'},{c:'E41',n:'Marasmo nutricional',cat:'Endocrinas'},
+{c:'E43',n:'Desnutricion proteico-calorica severa',cat:'Endocrinas'},
+{c:'E44',n:'Desnutricion proteico-calorica moderada o leve',cat:'Endocrinas'},
+{c:'E46',n:'Desnutricion proteico-calorica no especificada',cat:'Endocrinas'},
+{c:'E66',n:'Obesidad',cat:'Endocrinas'},{c:'E66.0',n:'Obesidad por exceso calorico',cat:'Endocrinas'},
+{c:'E66.9',n:'Obesidad no especificada',cat:'Endocrinas'},
+{c:'E78',n:'Dislipidemia (trastornos del metabolismo de lipoproteinas)',cat:'Endocrinas'},
+{c:'E78.0',n:'Hipercolesterolemia pura',cat:'Endocrinas'},
+{c:'E78.1',n:'Hipertrigliceridemia pura',cat:'Endocrinas'},
+{c:'E78.5',n:'Dislipidemia no especificada',cat:'Endocrinas'},
+// Digestivas
+{c:'K21',n:'Enfermedad por reflujo gastroesofagico',cat:'Digestivas'},
+{c:'K25',n:'Ulcera gastrica',cat:'Digestivas'},{c:'K26',n:'Ulcera duodenal',cat:'Digestivas'},
+{c:'K27',n:'Ulcera peptica sin especificar',cat:'Digestivas'},
+{c:'K28',n:'Ulcera gastroyeyunal',cat:'Digestivas'},
+{c:'K29',n:'Gastritis y duodenitis',cat:'Digestivas'},
+{c:'K29.7',n:'Gastritis no especificada',cat:'Digestivas'},
+{c:'K35',n:'Apendicitis aguda',cat:'Digestivas'},{c:'K36',n:'Apendicitis no especificada',cat:'Digestivas'},
+{c:'K37',n:'Apendicitis no especificada (sin perforacion)',cat:'Digestivas'},
+{c:'K40',n:'Hernia inguinal',cat:'Digestivas'},{c:'K41',n:'Hernia femoral',cat:'Digestivas'},
+{c:'K42',n:'Hernia umbilical',cat:'Digestivas'},{c:'K43',n:'Hernia ventral',cat:'Digestivas'},
+{c:'K44',n:'Hernia diafragmatica (hiato)',cat:'Digestivas'},
+{c:'K46',n:'Hernia abdominal no especificada',cat:'Digestivas'},
+{c:'K58',n:'Sindrome de intestino irritable',cat:'Digestivas'},
+{c:'K59',n:'Otros trastornos funcionales del intestino',cat:'Digestivas'},
+{c:'K59.0',n:'Constipacion',cat:'Digestivas'},
+{c:'K70',n:'Enfermedad hepatica alcoholica',cat:'Digestivas'},
+{c:'K73',n:'Hepatitis cronica',cat:'Digestivas'},
+{c:'K74',n:'Fibrosis y cirrosis hepatica',cat:'Digestivas'},
+{c:'K76',n:'Otras enfermedades del higado',cat:'Digestivas'},
+{c:'K77',n:'Trastornos hepaticos en enfermedades clasificadas en otra parte',cat:'Digestivas'},
+{c:'K80',n:'Colelitiasis (calculos biliares)',cat:'Digestivas'},
+{c:'K81',n:'Colecistitis',cat:'Digestivas'},
+// Genitourinarias
+{c:'N10',n:'Nefritis tubulointersticial aguda (pielonefritis aguda)',cat:'Genitourinarias'},
+{c:'N11',n:'Nefritis tubulointersticial cronica',cat:'Genitourinarias'},
+{c:'N17',n:'Insuficiencia renal aguda',cat:'Genitourinarias'},
+{c:'N18',n:'Insuficiencia renal cronica',cat:'Genitourinarias'},
+{c:'N19',n:'Insuficiencia renal no especificada',cat:'Genitourinarias'},
+{c:'N20',n:'Calculo del rinon',cat:'Genitourinarias'},{c:'N21',n:'Calculo de vias urinarias inferiores',cat:'Genitourinarias'},
+{c:'N23',n:'Colico renal no especificado',cat:'Genitourinarias'},
+{c:'N30',n:'Cistitis',cat:'Genitourinarias'},
+{c:'N39.0',n:'Infeccion de vias urinarias (ITU)',cat:'Genitourinarias'},
+{c:'N40',n:'Hiperplasia benigna de la prostata (HBP)',cat:'Genitourinarias'},
+{c:'N41',n:'Prostatitis',cat:'Genitourinarias'},
+{c:'N70',n:'Salpingitis y ooforitis (EPI)',cat:'Genitourinarias'},
+{c:'N72',n:'Cervicitis',cat:'Genitourinarias'},
+{c:'N76',n:'Vaginitis',cat:'Genitourinarias'},
+{c:'N92',n:'Menstruacion excesiva o irregular',cat:'Genitourinarias'},
+{c:'N94',n:'Dismenorrea',cat:'Genitourinarias'},
+{c:'N95',n:'Trastornos menopausicoss y perimenopausicos',cat:'Genitourinarias'},
+// Musculoesqueleticas
+{c:'M05',n:'Artritis reumatoide seropositiva',cat:'Musculoesqueleticas'},
+{c:'M06',n:'Otras artritis reumatoideas',cat:'Musculoesqueleticas'},
+{c:'M06.9',n:'Artritis reumatoide no especificada',cat:'Musculoesqueleticas'},
+{c:'M10',n:'Gota',cat:'Musculoesqueleticas'},
+{c:'M13',n:'Otras artritis',cat:'Musculoesqueleticas'},
+{c:'M15',n:'Poliartrosis',cat:'Musculoesqueleticas'},
+{c:'M16',n:'Coxartrosis (artrosis de cadera)',cat:'Musculoesqueleticas'},
+{c:'M17',n:'Gonartrosis (artrosis de rodilla)',cat:'Musculoesqueleticas'},
+{c:'M19',n:'Otras artrosis',cat:'Musculoesqueleticas'},
+{c:'M19.9',n:'Artrosis no especificada',cat:'Musculoesqueleticas'},
+{c:'M25.5',n:'Dolor articular',cat:'Musculoesqueleticas'},
+{c:'M47',n:'Espondilosis (artrosis de columna)',cat:'Musculoesqueleticas'},
+{c:'M51',n:'Hernia de disco intervertebral',cat:'Musculoesqueleticas'},
+{c:'M54',n:'Dorsalgia (dolor de espalda)',cat:'Musculoesqueleticas'},
+{c:'M54.5',n:'Lumbago (lumbalgia)',cat:'Musculoesqueleticas'},
+{c:'M54.4',n:'Lumbociatica',cat:'Musculoesqueleticas'},
+{c:'M75',n:'Lesiones del hombro',cat:'Musculoesqueleticas'},
+{c:'M79.1',n:'Mialgia',cat:'Musculoesqueleticas'},
+{c:'M80',n:'Osteoporosis con fractura patologica',cat:'Musculoesqueleticas'},
+{c:'M81',n:'Osteoporosis sin fractura patologica',cat:'Musculoesqueleticas'},
+{c:'M82',n:'Osteoporosis en enfermedades clasificadas en otra parte',cat:'Musculoesqueleticas'},
+// Dermatologicas
+{c:'L01',n:'Impetigo',cat:'Dermatologicas'},
+{c:'L02',n:'Absceso cutaneo, furunculo y carbunco',cat:'Dermatologicas'},
+{c:'L03',n:'Celulitis',cat:'Dermatologicas'},
+{c:'L08',n:'Otras infecciones locales de piel y tejido subcutaneo',cat:'Dermatologicas'},
+{c:'L20',n:'Dermatitis atopica',cat:'Dermatologicas'},
+{c:'L21',n:'Dermatitis seborreica',cat:'Dermatologicas'},
+{c:'L23',n:'Dermatitis alergica de contacto',cat:'Dermatologicas'},
+{c:'L24',n:'Dermatitis de contacto irritativa',cat:'Dermatologicas'},
+{c:'L25',n:'Dermatitis de contacto no especificada',cat:'Dermatologicas'},
+{c:'L27',n:'Dermatitis por sustancias ingeridas',cat:'Dermatologicas'},
+{c:'L28',n:'Prurigo',cat:'Dermatologicas'},
+{c:'L29',n:'Prurito',cat:'Dermatologicas'},
+{c:'L30',n:'Otras dermatitis',cat:'Dermatologicas'},
+{c:'L30.9',n:'Dermatitis no especificada',cat:'Dermatologicas'},
+{c:'L40',n:'Psoriasis',cat:'Dermatologicas'},
+{c:'L50',n:'Urticaria',cat:'Dermatologicas'},
+{c:'L60',n:'Trastornos de las unas',cat:'Dermatologicas'},
+{c:'L70',n:'Acne',cat:'Dermatologicas'},
+// Mentales
+{c:'F00',n:'Demencia en enfermedad de Alzheimer',cat:'Mentales'},
+{c:'F01',n:'Demencia vascular',cat:'Mentales'},
+{c:'F03',n:'Demencia no especificada',cat:'Mentales'},
+{c:'F10',n:'Trastornos mentales por uso de alcohol',cat:'Mentales'},
+{c:'F10.1',n:'Uso nocivo de alcohol',cat:'Mentales'},
+{c:'F10.2',n:'Sindrome de dependencia del alcohol (alcoholismo)',cat:'Mentales'},
+{c:'F11',n:'Trastornos mentales por uso de opioides',cat:'Mentales'},
+{c:'F12',n:'Trastornos mentales por uso de cannabinoides',cat:'Mentales'},
+{c:'F17',n:'Trastornos mentales por uso de tabaco',cat:'Mentales'},
+{c:'F19',n:'Trastornos mentales por uso de multiples drogas',cat:'Mentales'},
+{c:'F20',n:'Esquizofrenia',cat:'Mentales'},{c:'F20.0',n:'Esquizofrenia paranoide',cat:'Mentales'},
+{c:'F31',n:'Trastorno afectivo bipolar',cat:'Mentales'},
+{c:'F32',n:'Episodio depresivo',cat:'Mentales'},{c:'F32.0',n:'Episodio depresivo leve',cat:'Mentales'},
+{c:'F32.1',n:'Episodio depresivo moderado',cat:'Mentales'},
+{c:'F32.2',n:'Episodio depresivo grave sin sintomas psicoticos',cat:'Mentales'},
+{c:'F33',n:'Trastorno depresivo recurrente',cat:'Mentales'},
+{c:'F40',n:'Trastornos de ansiedad fobica',cat:'Mentales'},
+{c:'F41',n:'Otros trastornos de ansiedad',cat:'Mentales'},
+{c:'F41.0',n:'Trastorno de panico',cat:'Mentales'},
+{c:'F41.1',n:'Trastorno de ansiedad generalizada',cat:'Mentales'},
+{c:'F41.2',n:'Trastorno mixto de ansiedad y depresion',cat:'Mentales'},
+{c:'F43',n:'Reaccion al estres grave y trastornos de adaptacion',cat:'Mentales'},
+{c:'F51',n:'Trastornos no organicos del sueno',cat:'Mentales'},
+{c:'F51.0',n:'Insomnio no organico',cat:'Mentales'},
+// Embarazo y parto
+{c:'O14',n:'Preeclampsia',cat:'Embarazo'},
+{c:'O14.0',n:'Preeclampsia moderada',cat:'Embarazo'},
+{c:'O14.1',n:'Preeclampsia severa',cat:'Embarazo'},
+{c:'O15',n:'Eclampsia',cat:'Embarazo'},
+{c:'O20',n:'Hemorragia precoz del embarazo (amenaza de aborto)',cat:'Embarazo'},
+{c:'O20.0',n:'Amenaza de aborto',cat:'Embarazo'},
+{c:'O21',n:'Hiperemesis gravidica',cat:'Embarazo'},
+{c:'O24',n:'Diabetes mellitus en el embarazo',cat:'Embarazo'},
+{c:'O26',n:'Atencion a la madre por otras complicaciones del embarazo',cat:'Embarazo'},
+{c:'O36',n:'Atencion materna por problemas fetales',cat:'Embarazo'},
+{c:'O42',n:'Ruptura prematura de membranas',cat:'Embarazo'},
+{c:'O46',n:'Hemorragia anteparto',cat:'Embarazo'},
+{c:'O47',n:'Falso trabajo de parto',cat:'Embarazo'},
+{c:'O60',n:'Parto prematuro',cat:'Embarazo'},
+{c:'O80',n:'Parto unico espontaneo (normal)',cat:'Embarazo'},
+{c:'O82',n:'Parto por cesarea',cat:'Embarazo'},
+{c:'O85',n:'Sepsis puerperal',cat:'Embarazo'},
+{c:'O90',n:'Complicaciones del puerperio',cat:'Embarazo'},
+{c:'O99',n:'Otras enfermedades maternas clasificables en otra parte',cat:'Embarazo'},
+{c:'Z34',n:'Supervision de embarazo normal',cat:'Embarazo'},
+{c:'Z34.0',n:'Control de primer embarazo normal',cat:'Embarazo'},
+{c:'Z34.8',n:'Control de otros embarazos normales',cat:'Embarazo'},
+{c:'Z35',n:'Supervision de embarazo de alto riesgo',cat:'Embarazo'},
+// Pediatricas
+{c:'P07',n:'Recien nacido de bajo peso',cat:'Pediatricas'},
+{c:'P07.0',n:'Recien nacido con peso extremadamente bajo (<1000g)',cat:'Pediatricas'},
+{c:'P07.1',n:'Otro recien nacido de bajo peso (<2500g)',cat:'Pediatricas'},
+{c:'P07.3',n:'Recien nacido prematuro',cat:'Pediatricas'},
+{c:'P22',n:'Dificultad respiratoria del recien nacido',cat:'Pediatricas'},
+{c:'P36',n:'Sepsis bacteriana del recien nacido',cat:'Pediatricas'},
+{c:'P59',n:'Ictericia neonatal por otras causas',cat:'Pediatricas'},
+{c:'P59.9',n:'Ictericia neonatal no especificada',cat:'Pediatricas'},
+{c:'D50',n:'Anemia por deficiencia de hierro',cat:'Pediatricas'},
+{c:'D50.9',n:'Anemia ferropenica no especificada',cat:'Pediatricas'},
+{c:'D64',n:'Otras anemias',cat:'Pediatricas'},
+// Trauma y otras
+{c:'S00',n:'Traumatismo superficial de la cabeza',cat:'Trauma'},
+{c:'S01',n:'Herida de la cabeza',cat:'Trauma'},
+{c:'S06',n:'Traumatismo intracraneal',cat:'Trauma'},
+{c:'S09',n:'Otros traumatismos de la cabeza',cat:'Trauma'},
+{c:'S22',n:'Fractura de costilla y esternon',cat:'Trauma'},
+{c:'S42',n:'Fractura del hombro y brazo',cat:'Trauma'},
+{c:'S52',n:'Fractura del antebrazo',cat:'Trauma'},
+{c:'S62',n:'Fractura de la muneca y mano',cat:'Trauma'},
+{c:'S72',n:'Fractura del femur',cat:'Trauma'},
+{c:'S82',n:'Fractura de pierna (tibia/perone)',cat:'Trauma'},
+{c:'S92',n:'Fractura del pie',cat:'Trauma'},
+{c:'S93',n:'Esguince de tobillo',cat:'Trauma'},
+{c:'T14',n:'Traumatismo no especificado',cat:'Trauma'},
+{c:'T20',n:'Quemadura de cabeza y cuello',cat:'Trauma'},
+{c:'T21',n:'Quemadura de tronco',cat:'Trauma'},
+{c:'T22',n:'Quemadura de hombro y miembro superior',cat:'Trauma'},
+{c:'T23',n:'Quemadura de muneca y mano',cat:'Trauma'},
+{c:'T24',n:'Quemadura de cadera y miembro inferior',cat:'Trauma'},
+{c:'T30',n:'Quemadura de region no especificada',cat:'Trauma'},
+{c:'T36',n:'Intoxicacion por antibioticos sistemicos',cat:'Trauma'},
+{c:'T39',n:'Intoxicacion por analgesicos y antipireticos',cat:'Trauma'},
+{c:'T42',n:'Intoxicacion por antiepilepticos y sedantes',cat:'Trauma'},
+{c:'T50',n:'Intoxicacion por diureticos y otros farmacos',cat:'Trauma'},
+{c:'T58',n:'Efecto toxico del monoxido de carbono',cat:'Trauma'},
+{c:'T65',n:'Efecto toxico de otras sustancias',cat:'Trauma'},
+// Otras / Examenes
+{c:'Z00',n:'Examen general de salud',cat:'Otras'},
+{c:'Z00.0',n:'Examen medico general',cat:'Otras'},
+{c:'Z00.1',n:'Examen de salud del nino (puericultura)',cat:'Otras'},
+{c:'Z01',n:'Otros examenes especiales',cat:'Otras'},
+{c:'Z12',n:'Examen de deteccion de neoplasias',cat:'Otras'},
+{c:'Z23',n:'Necesidad de inmunizacion contra enfermedad bacteriana',cat:'Otras'},
+{c:'Z30',n:'Atencion para anticoncepcion',cat:'Otras'},
+{c:'Z39',n:'Atencion y examen posparto',cat:'Otras'},
+{c:'Z71',n:'Personas en contacto con servicios de salud para consejeria',cat:'Otras'},
+{c:'Z76',n:'Contacto con servicios de salud en otras circunstancias',cat:'Otras'},
+{c:'R10',n:'Dolor abdominal',cat:'Otras'},
+{c:'R50',n:'Fiebre de origen desconocido',cat:'Otras'},
+{c:'R51',n:'Cefalea',cat:'Otras'},
+{c:'R05',n:'Tos',cat:'Otras'},
+{c:'R11',n:'Nausea y vomito',cat:'Otras'},
+{c:'R42',n:'Mareo y desvanecimiento',cat:'Otras'},
+{c:'R53',n:'Malestar y fatiga',cat:'Otras'},
+{c:'R55',n:'Sincope y colapso',cat:'Otras'},
+{c:'H10',n:'Conjuntivitis',cat:'Otras'},
+{c:'H10.9',n:'Conjuntivitis no especificada',cat:'Otras'},
+{c:'H65',n:'Otitis media no supurativa',cat:'Otras'},
+{c:'H66',n:'Otitis media supurativa',cat:'Otras'},
+{c:'H66.9',n:'Otitis media no especificada',cat:'Otras'},
+];
+
+// === CIE-10 SEARCH ===
+function buscarCIE() {
+  const q = document.getElementById('cie_buscar').value.trim().toLowerCase();
+  const container = document.getElementById('cie_resultados');
+  const countEl = document.getElementById('cie_count');
+  if (q.length < 2) {
+    container.innerHTML = '';
+    countEl.textContent = 'Escriba al menos 2 caracteres para buscar';
+    return;
+  }
+  const terms = q.split(/\s+/);
+  const results = CIE10.filter(item => {
+    const txt = (item.c + ' ' + item.n + ' ' + item.cat).toLowerCase();
+    return terms.every(t => txt.includes(t));
+  });
+  countEl.textContent = results.length + ' resultado(s)';
+  if (results.length === 0) {
+    container.innerHTML = '<div class="empty"><p>Sin resultados</p></div>';
+    return;
+  }
+  container.innerHTML = results.slice(0, 50).map(item => `
+    <div class="cie-item">
+      <span class="cie-code">${item.c}</span>
+      <span class="cie-name">${item.n}<span class="cie-cat">${item.cat}</span></span>
+      <button class="btn-copy" onclick="copiarCIE('${item.c}','${item.n.replace(/'/g,"\\'")}')">Copiar</button>
+    </div>
+  `).join('');
+}
+
+function copiarCIE(code, name) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => toast('Copiado: ' + code));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Copiado: ' + code);
+  }
+}
+
+function seleccionarCIE(code, name) {
+  document.getElementById('c_cie').value = code;
+  const diagField = document.getElementById('c_diag');
+  if (!diagField.value.trim()) diagField.value = name;
+  cerrarModal();
+  showPage('consulta');
+  toast('CIE-10: ' + code + ' - ' + name);
+}
+
+function abrirBuscadorCIE() {
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <h3>Buscar CIE-10</h3>
+    <div class="form-group">
+      <input type="text" id="modal_cie_buscar" placeholder="Buscar enfermedad o codigo..." oninput="buscarCIEModal()" autocomplete="off" autofocus>
+    </div>
+    <div id="modal_cie_resultados" style="max-height:55vh;overflow-y:auto"></div>
+    <button class="btn btn-warn" onclick="cerrarModal()" style="margin-top:10px">Cerrar</button>
+  `;
+  modal.classList.add('show');
+  setTimeout(() => document.getElementById('modal_cie_buscar').focus(), 100);
+}
+
+function buscarCIEModal() {
+  const q = document.getElementById('modal_cie_buscar').value.trim().toLowerCase();
+  const container = document.getElementById('modal_cie_resultados');
+  if (q.length < 2) { container.innerHTML = ''; return; }
+  const terms = q.split(/\s+/);
+  const results = CIE10.filter(item => {
+    const txt = (item.c + ' ' + item.n + ' ' + item.cat).toLowerCase();
+    return terms.every(t => txt.includes(t));
+  });
+  if (results.length === 0) {
+    container.innerHTML = '<div class="empty"><p>Sin resultados</p></div>';
+    return;
+  }
+  container.innerHTML = results.slice(0, 30).map(item => `
+    <div class="cie-item" onclick="seleccionarCIE('${item.c}','${item.n.replace(/'/g,"\\'")}')" style="cursor:pointer">
+      <span class="cie-code">${item.c}</span>
+      <span class="cie-name">${item.n}<span class="cie-cat">${item.cat}</span></span>
+      <span style="font-size:11px;color:var(--ok)">Usar</span>
+    </div>
+  `).join('');
+}
+
+function cerrarModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+// === EDO WEEKLY REPORT ===
+function generarReporteEDO() {
+  const semana = document.getElementById('rep_semana').value;
+  const ano = document.getElementById('rep_ano').value;
+  if (!semana || !ano) { toast('Ingrese semana y ano'); return; }
+
+  const edoFields = [
+    {id:'edo_eda',name:'Enfermedades diarreicas agudas (EDA)',cie:'A09'},
+    {id:'edo_ira',name:'Infecciones respiratorias agudas (IRA)',cie:'J06'},
+    {id:'edo_tb',name:'Tuberculosis',cie:'A15-A16'},
+    {id:'edo_hepatitis',name:'Hepatitis viral',cie:'B15-B19'},
+    {id:'edo_sifilis',name:'Sifilis',cie:'A50-A53'},
+    {id:'edo_blenorragia',name:'Blenorragia',cie:'A54'},
+    {id:'edo_varicela',name:'Varicela',cie:'B01'},
+    {id:'edo_leptospirosis',name:'Leptospirosis',cie:'A27'},
+    {id:'edo_dengue',name:'Dengue',cie:'A90-A91'},
+    {id:'edo_intox',name:'Intoxicaciones alimentarias',cie:'A05'},
+    {id:'edo_conjuntivitis',name:'Conjuntivitis',cie:'B30'},
+    {id:'edo_escabiosis',name:'Escabiosis',cie:'B86'}
+  ];
+
+  const pob = getPoblacion();
+  let totalSemana = 0;
+  const rows = edoFields.map((f, i) => {
+    const val = parseInt(document.getElementById(f.id)?.value) || 0;
+    totalSemana += val;
+    return `<tr><td>${i+1}</td><td>${f.name}</td><td>${f.cie}</td><td style="text-align:center;font-weight:700">${val}</td><td style="text-align:center">${val}</td></tr>`;
+  }).join('');
+
+  const html = `
+    <div class="report-preview" id="report-print-area">
+      <h2>REPORTE SEMANAL EDO</h2>
+      <p style="text-align:center;font-size:12px;margin-bottom:10px">Modelo 241-403-02 | Semana Estadistica ${semana} | Ano ${ano}</p>
+      <p style="font-size:12px">Consultorio: _____ | Area de Salud: _____ | Municipio: _____</p>
+      <p style="font-size:12px">Poblacion del area: ${pob.pob_total || '___'}</p>
+      <table>
+        <thead><tr><th>#</th><th>Enfermedad</th><th>CIE-10</th><th>Casos Semana</th><th>Acumulado</th></tr></thead>
+        <tbody>${rows}
+          <tr style="font-weight:700;background:#e8f8f5"><td></td><td>TOTAL</td><td></td><td style="text-align:center">${totalSemana}</td><td style="text-align:center">${totalSemana}</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;margin-top:10px">Fecha de confeccion: ${new Date().toLocaleDateString('es-ES')} | Firma: _______________</p>
+      <button class="btn btn-pri btn-sm no-print" onclick="imprimirReporte()" style="margin-top:10px;width:auto">Imprimir / Captura</button>
+    </div>
+  `;
+  document.getElementById('reporte_container').innerHTML = html;
+  toast('Reporte EDO generado');
+}
+
+// === MONTHLY REPORT ===
+function generarReporteMensual() {
+  const mes = parseInt(document.getElementById('rep_mes').value);
+  const ano = parseInt(document.getElementById('rep_mes_ano').value);
+  const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  const pob = getPoblacion();
+  const consultas = getConsultas();
+
+  // Filter consultations for the selected month
+  const delMes = consultas.filter(c => {
+    if (!c.fecha) return false;
+    const d = new Date(c.fecha);
+    return d.getMonth() + 1 === mes && d.getFullYear() === ano;
+  });
+
+  const primera = delMes.filter(c => c.tipo === 'primera').length;
+  const seguimiento = delMes.filter(c => c.tipo === 'seguimiento').length;
+  const alta = delMes.filter(c => c.tipo === 'alta').length;
+  const consultorio = delMes.filter(c => c.lugar === 'consultorio').length;
+  const terreno = delMes.filter(c => c.lugar === 'terreno').length;
+  const casosNuevos = delMes.filter(c => c.incidencia).length;
+  const enfermeria = delMes.filter(c => c.enfermeria).length;
+
+  // EDO data from inputs
+  const edoItems = [
+    {name:'EDA',id:'edo_eda'},{name:'IRA',id:'edo_ira'},{name:'TB',id:'edo_tb'},
+    {name:'Hepatitis',id:'edo_hepatitis'},{name:'Sifilis',id:'edo_sifilis'},
+    {name:'Blenorragia',id:'edo_blenorragia'},{name:'Varicela',id:'edo_varicela'},
+    {name:'Leptospirosis',id:'edo_leptospirosis'},{name:'Dengue',id:'edo_dengue'},
+    {name:'Intox. alim.',id:'edo_intox'},{name:'Conjuntivitis',id:'edo_conjuntivitis'},
+    {name:'Escabiosis',id:'edo_escabiosis'}
+  ];
+  let edoRows = '';
+  let edoTotal = 0;
+  edoItems.forEach(e => {
+    const v = parseInt(document.getElementById(e.id)?.value) || 0;
+    edoTotal += v;
+    if (v > 0) edoRows += `<tr><td>${e.name}</td><td style="text-align:center">${v}</td></tr>`;
+  });
+
+  // Dispensarizacion
+  const g1 = gv('disp_g1'), g2 = gv('disp_g2'), g3 = gv('disp_g3'), g4 = gv('disp_g4');
+  const dispTotal = g1+g2+g3+g4;
+
+  // Indicadores clave
+  const nv = gv('hv_nv'), def = gv('hv_def'), def_inf = gv('hv_def_inf'), bp = gv('hv_bp');
+  let indRows = '';
+  if (pob.pob_total > 0) {
+    if (nv > 0) {
+      indRows += `<tr><td>Tasa de Natalidad</td><td>${((nv/pob.pob_total)*1000).toFixed(2)} x 1,000</td></tr>`;
+      indRows += `<tr><td>Indice Bajo Peso al Nacer</td><td>${((bp/nv)*100).toFixed(2)}%</td></tr>`;
+      if (def_inf >= 0) indRows += `<tr><td>Tasa Mortalidad Infantil</td><td>${((def_inf/nv)*1000).toFixed(2)} x 1,000 NV</td></tr>`;
+    }
+    if (def >= 0) indRows += `<tr><td>Tasa Mortalidad General</td><td>${((def/pob.pob_total)*1000).toFixed(2)} x 1,000</td></tr>`;
+  }
+
+  const html = `
+    <div class="report-preview" id="report-print-area">
+      <h2>REPORTE MENSUAL DE ESTADISTICAS DE SALUD</h2>
+      <p style="text-align:center;font-size:13px;margin-bottom:8px">${meses[mes]} ${ano}</p>
+      <p style="font-size:12px">Consultorio: _____ | Area de Salud: _____ | Municipio: _____</p>
+
+      <div class="section-title" style="margin-top:14px">Poblacion</div>
+      <table>
+        <tr><td>Poblacion total</td><td style="text-align:center;font-weight:700">${pob.pob_total||0}</td></tr>
+        <tr><td>Mujeres 15-49 anos</td><td style="text-align:center">${pob.pob_mujeres_fertil||0}</td></tr>
+        <tr><td>Menores de 1 ano</td><td style="text-align:center">${pob.pob_menores1||0}</td></tr>
+        <tr><td>Menores de 5 anos</td><td style="text-align:center">${pob.pob_menores5||0}</td></tr>
+        <tr><td>60+ anos</td><td style="text-align:center">${pob.pob_60||0}</td></tr>
+      </table>
+
+      <div class="section-title">Consultas del Mes</div>
+      <table>
+        <tr><td>Total consultas</td><td style="text-align:center;font-weight:700">${delMes.length}</td></tr>
+        <tr><td>Primera vez</td><td style="text-align:center">${primera}</td></tr>
+        <tr><td>Seguimiento</td><td style="text-align:center">${seguimiento}</td></tr>
+        <tr><td>Alta</td><td style="text-align:center">${alta}</td></tr>
+        <tr><td>En consultorio</td><td style="text-align:center">${consultorio}</td></tr>
+        <tr><td>En terreno</td><td style="text-align:center">${terreno}</td></tr>
+        <tr><td>Casos nuevos (incidencia)</td><td style="text-align:center">${casosNuevos}</td></tr>
+        <tr><td>Seguimiento enfermeria</td><td style="text-align:center">${enfermeria}</td></tr>
+      </table>
+
+      ${indRows ? `<div class="section-title">Indicadores Principales</div><table><thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>${indRows}</tbody></table>` : ''}
+
+      ${edoRows ? `<div class="section-title">EDO - Enfermedades de Declaracion Obligatoria</div><table><thead><tr><th>Enfermedad</th><th>Casos</th></tr></thead><tbody>${edoRows}<tr style="font-weight:700;background:#e8f8f5"><td>Total EDO</td><td style="text-align:center">${edoTotal}</td></tr></tbody></table>` : ''}
+
+      ${dispTotal > 0 ? `<div class="section-title">Dispensarizacion</div><table>
+        <tr><td>Grupo I (Sano)</td><td style="text-align:center">${g1} (${((g1/dispTotal)*100).toFixed(1)}%)</td></tr>
+        <tr><td>Grupo II (Riesgo)</td><td style="text-align:center">${g2} (${((g2/dispTotal)*100).toFixed(1)}%)</td></tr>
+        <tr><td>Grupo III (Enfermo)</td><td style="text-align:center">${g3} (${((g3/dispTotal)*100).toFixed(1)}%)</td></tr>
+        <tr><td>Grupo IV (Discapacidad)</td><td style="text-align:center">${g4} (${((g4/dispTotal)*100).toFixed(1)}%)</td></tr>
+        <tr style="font-weight:700"><td>Total dispensarizados</td><td style="text-align:center">${dispTotal}</td></tr>
+      </table>` : ''}
+
+      <p style="font-size:11px;margin-top:12px">Fecha de confeccion: ${new Date().toLocaleDateString('es-ES')} | Firma: _______________</p>
+      <button class="btn btn-pri btn-sm no-print" onclick="imprimirReporte()" style="margin-top:10px;width:auto">Imprimir</button>
+    </div>
+  `;
+  document.getElementById('reporte_container').innerHTML = html;
+  toast('Reporte mensual generado');
+}
+
+function imprimirReporte() {
+  // Mark the datos page for printing
+  document.getElementById('page-datos').classList.add('print-active');
+  window.print();
+  document.getElementById('page-datos').classList.remove('print-active');
+}
 
 // Register service worker
 if ('serviceWorker' in navigator) {

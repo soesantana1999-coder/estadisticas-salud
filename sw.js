@@ -1,5 +1,5 @@
-const CACHE_NAME = 'estadsalud-v2';
-const FILES = ['/', '/index.html', '/manifest.json'];
+const CACHE_NAME = 'estadsalud-v3';
+const FILES = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(FILES)));
@@ -24,6 +24,6 @@ self.addEventListener('fetch', e => {
       const clone = resp.clone();
       caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
       return resp;
-    }).catch(() => caches.match('/index.html')))
+    }).catch(() => caches.match('./index.html')))
   );
 });
